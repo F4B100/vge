@@ -25,6 +25,10 @@ typedef struct QueueInfo {
  * 0 - GraphicsQueue / Transfer Queue
  * 1 - PresentationQueue
  */
+
+#define GRAPHICS_QUEUE 0
+#define PRESENTATION_QUEUE 1
+
 typedef struct VkQueueFamilyIndices {
     queueInfo queueInfoArr[QUEUE_NUMBER];
 } queueFamilyIndices;
@@ -42,7 +46,9 @@ typedef struct VulkanContext {
     VkInstance instance;
     VkPhysicalDevice physicalDevice;
     VkSurfaceKHR surface;
+
     VkDevice device;
+    VkQueue queues[QUEUE_NUMBER];
 
     VkSwapchainKHR swapchain;
     uint32_t swapChainImageCount;

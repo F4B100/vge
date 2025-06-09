@@ -2,12 +2,12 @@
 // Created by fabio on 22-05-2025.
 //
 
+#include <stdio.h>
 #include "vulkanInit.h"
 #include "vulkanPhysicalDevice.h"
-#include <stdio.h>
-
 #include "vulkanLogicalDevice.h"
 #include "vulkanSwapChain.h"
+#include "vulkanQueues.h"
 
 
 vulkanContext *initVulkan(vgeWindow *window) {
@@ -22,6 +22,8 @@ vulkanContext *initVulkan(vgeWindow *window) {
     glfwCreateWindowSurface(context->instance, window->window, nullptr, &context->surface);
     choosePhysicalDevice(context);
     createLogicalDevice(context->physicalDevice, context->surface, &context->device);
+    queueFamilyIndices *queueIndices = searchQueueFamilies(context->physicalDevice, context->surface);
+    createQueues(context->queues, queueIndices, QUEUE_NUMBER, context->device);
     createSwapChain(context);
     getSwapChainImages(context);
 
