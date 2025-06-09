@@ -11,7 +11,7 @@
 
 
 vulkanContext *initVulkan(vgeWindow *window) {
-    vulkanContext * context = malloc(sizeof(vulkanContext));
+    vulkanContext * context = calloc(sizeof(vulkanContext), 1);
     if (!context) {
         return nullptr;
     }
@@ -23,9 +23,7 @@ vulkanContext *initVulkan(vgeWindow *window) {
     choosePhysicalDevice(context);
     createLogicalDevice(context->physicalDevice, context->surface, &context->device);
     createSwapChain(context);
-
-
-
+    getSwapChainImages(context);
 
 
     return context;

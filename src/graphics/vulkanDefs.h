@@ -10,7 +10,6 @@
 
 #define TRUE 1
 #define FALSE 0
-#define NULL 0
 
 #define NUM_DEVICE_EXTENSIONS 1
 #define QUEUE_NUMBER 2

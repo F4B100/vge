@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.31)
-project(vge C)
+project(vge C ASM)
 
 set(CMAKE_C_STANDARD 23)
 

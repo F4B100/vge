@@ -64,7 +64,17 @@ void choosePhysicalDevice(vulkanContext *context) {
     uint32_t physicalDevicesCount = 0;
     vkEnumeratePhysicalDevices(context->instance, &physicalDevicesCount, nullptr);
 
-    VkPhysicalDevice physicalDevices[physicalDevicesCount];
+    if (physicalDevicesCount == 0) {
+        fprintf(stderr, "No Vulkan-compatible GPUs found.\n");
+        return;
+    }
+
+    VkPhysicalDevice* physicalDevices = malloc(sizeof(VkPhysicalDevice) * physicalDevicesCount);
+    if (!physicalDevices) {
+        fprintf(stderr, "Failed to allocate memory for physical devices.\n");
+        return;
+    }
+
     vkEnumeratePhysicalDevices(context->instance, &physicalDevicesCount, physicalDevices);
 
     for (uint32_t i = 0; i < physicalDevicesCount; i++) {
@@ -77,4 +87,9 @@ void choosePhysicalDevice(vulkanContext *context) {
         }
     }
 
+    if (context->physicalDevice == VK_NULL_HANDLE) {
+        fprintf(stderr, "Failed to find a suitable GPU.\n");
+    }
+
+    free(physicalDevices);
 }

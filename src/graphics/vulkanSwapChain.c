@@ -145,5 +145,5 @@ void getSwapChainImages(vulkanContext *context) {
     vkGetSwapchainImagesKHR(context->device, context->swapchain, &context->swapChainImageCount, nullptr);
     context->swapChainImages = calloc(sizeof(VkImage), context->swapChainImageCount);
 
-    vkGetSwapchainImagesKHR(context->device, context->swapChainImages, &context->swapChainImages, context->swapChainImages);
+    vkGetSwapchainImagesKHR(context->device, context->swapchain, &context->swapChainImageCount, context->swapChainImages);
 }
