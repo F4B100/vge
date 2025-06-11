@@ -11,6 +11,8 @@ void createSwapChain(vulkanContext *context);
 
 void getSwapChainImages(vulkanContext *context);
 
+VkImageView *createImageViews(uint32_t imageCount, VkImage *swapChainImages, VkFormat format, VkDevice device);
+
 swapChainSupportDetails* createSwapChainSupportDetails(const uint32_t sizeFormats, const uint32_t sizeModes);
 void freeSwapChainSupportDetails(swapChainSupportDetails* details);
 swapChainSupportDetails* querySwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);

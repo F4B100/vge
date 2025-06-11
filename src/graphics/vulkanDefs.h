@@ -52,6 +52,7 @@ typedef struct VulkanContext {
 
     VkSwapchainKHR swapchain;
     uint32_t swapChainImageCount;
+    VkImageView *swapChainImageViews;
     VkImage *swapChainImages;
 
     vgeWindow *window;

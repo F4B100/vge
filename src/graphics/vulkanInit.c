@@ -21,8 +21,8 @@ vulkanContext *initVulkan(vgeWindow *window) {
     createVulkanInstance(context);
     glfwCreateWindowSurface(context->instance, window->window, nullptr, &context->surface);
     choosePhysicalDevice(context);
-    createLogicalDevice(context->physicalDevice, context->surface, &context->device);
     queueFamilyIndices *queueIndices = searchQueueFamilies(context->physicalDevice, context->surface);
+    createLogicalDevice(context->physicalDevice, queueIndices, QUEUE_NUMBER, &context->device);
     createQueues(context->queues, queueIndices, QUEUE_NUMBER, context->device);
     createSwapChain(context);
     getSwapChainImages(context);

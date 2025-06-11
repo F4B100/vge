@@ -10,21 +10,15 @@ char * logicalDeviceExtensions [] = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
-void createLogicalDevice(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkDevice *toCreate) {
-    queueFamilyIndices *queues = searchQueueFamilies(physicalDevice, surface);
+void createLogicalDevice(VkPhysicalDevice physicalDevice, queueFamilyIndices *queueIndices, uint32_t numQueues, VkDevice *toCreate) {
 
-    if (queues == NULL) {
-        printf("Failed to find queue families\n");
-        return;
-    }
-
-    VkDeviceQueueCreateInfo queueCreateInfo[QUEUE_NUMBER];
-    for (int i = 0; i < QUEUE_NUMBER; i++) {
+    VkDeviceQueueCreateInfo *queueCreateInfo = calloc(sizeof(VkDeviceQueueCreateInfo), numQueues);
+    for (int i = 0; i < numQueues; i++) {
         queueCreateInfo[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queueCreateInfo[i].pNext = nullptr;
         queueCreateInfo[i].queueCount = 1;
-        queueCreateInfo[i].pQueuePriorities = &queues->queueInfoArr[i].queuePriority;
-        queueCreateInfo[i].queueFamilyIndex = queues->queueInfoArr[i].queueFamilyIndex;
+        queueCreateInfo[i].pQueuePriorities = &queueIndices->queueInfoArr[i].queuePriority;
+        queueCreateInfo[i].queueFamilyIndex = queueIndices->queueInfoArr[i].queueFamilyIndex;
     }
 
     VkDeviceCreateInfo deviceCreateInfo = {
@@ -44,8 +38,8 @@ void createLogicalDevice(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, 
 
     if (res != VK_SUCCESS) {
         fprintf(stderr, "failed to create logical device\n");
-        return;
     }
+    free(queueCreateInfo);
 }
 
 void createQueues(VkQueue *queues, queueFamilyIndices *queueIndices, uint32_t numQueues, VkDevice device) {
