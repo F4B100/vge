@@ -7,11 +7,11 @@
 
 #include "vulkanDefs.h"
 
-void createSwapChain(vulkanContext *context);
+void createSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, vgeWindow *window, VkSwapchainKHR *toCreate);
 
-void getSwapChainImages(vulkanContext *context);
+uint32_t getSwapChainImages(VkSwapchainKHR swapchain, VkDevice device, VkImage **toStore);
 
-VkImageView *createImageViews(uint32_t imageCount, VkImage *swapChainImages, VkFormat format, VkDevice device);
+VkImageView *createSwapChainImageViews(uint32_t imageCount, VkImage *swapChainImages, VkFormat format, VkDevice device);
 
 swapChainSupportDetails* createSwapChainSupportDetails(const uint32_t sizeFormats, const uint32_t sizeModes);
 void freeSwapChainSupportDetails(swapChainSupportDetails* details);

@@ -10,6 +10,7 @@
 
 typedef struct GameInfo {
     vgeWindow *window;
+    vulkanContext *graphics;
     double deltaTime;
     uint32_t frameCount;
     double timeElapsed;

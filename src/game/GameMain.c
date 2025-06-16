@@ -25,6 +25,8 @@ void GameInit() {
 
     vulkanContext *context = initVulkan(info.window);
 
+    info.graphics = context;
+
     GameStart(&info);
 }
 void GameStart(gameInfo *info) {

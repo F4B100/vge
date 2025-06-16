@@ -24,9 +24,15 @@ vulkanContext *initVulkan(vgeWindow *window) {
     queueFamilyIndices *queueIndices = searchQueueFamilies(context->physicalDevice, context->surface);
     createLogicalDevice(context->physicalDevice, queueIndices, QUEUE_NUMBER, &context->device);
     createQueues(context->queues, queueIndices, QUEUE_NUMBER, context->device);
-    createSwapChain(context);
-    getSwapChainImages(context);
+    createSwapChain(context->physicalDevice, context->device, context->surface, context->window, &context->swapchain);
+    context->swapChainImageCount = getSwapChainImages(context->swapchain, context->device, &context->swapChainImages);
 
+    context->swapChainImageViews = createSwapChainImageViews(
+        context->swapChainImageCount,
+        context->swapChainImages,
+        VK_FORMAT_R8G8B8A8_SRGB,
+        context->device
+        );
 
     return context;
 }

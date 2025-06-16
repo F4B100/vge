@@ -102,15 +102,15 @@ VkExtent2D chooseSwapExtent(swapChainSupportDetails *supportDetails, vgeWindow *
     return actualExtent;
 }
 
-void createSwapChain(vulkanContext *context) {
+void createSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, vgeWindow *window, VkSwapchainKHR *toCreate) {
 
-    swapChainSupportDetails *details = querySwapChainSupport(context->physicalDevice, context->surface);
+    swapChainSupportDetails *details = querySwapChainSupport(physicalDevice, surface);
 
     uint32_t surfaceFormatIndex = chooseSwapSurfaceFormat(details);
     uint32_t presentModeIndex = chooseSwapPresentMode(details);
     VkSurfaceFormatKHR * surfaceFormat = details->formats + surfaceFormatIndex;
     VkPresentModeKHR * presentMode = details->presentModes + presentModeIndex;
-    VkExtent2D extent = chooseSwapExtent(details, context->window);
+    VkExtent2D extent = chooseSwapExtent(details, window);
 
     uint32_t imageCount = details->capabilities.minImageCount + 1;
 
@@ -121,7 +121,7 @@ void createSwapChain(vulkanContext *context) {
 
     VkSwapchainCreateInfoKHR createInfo = {
         .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-        .surface = context->surface,
+        .surface = surface,
         .minImageCount = imageCount,
         .imageFormat = surfaceFormat->format,
         .imageColorSpace = surfaceFormat->colorSpace,
@@ -137,18 +137,19 @@ void createSwapChain(vulkanContext *context) {
         .oldSwapchain = VK_NULL_HANDLE
     };
 
-    vkCreateSwapchainKHR(context->device, &createInfo, nullptr, &context->swapchain);
+    vkCreateSwapchainKHR(device, &createInfo, nullptr, toCreate);
 }
 
-void getSwapChainImages(vulkanContext *context) {
+uint32_t getSwapChainImages(VkSwapchainKHR swapchain, VkDevice device, VkImage **toStore) {
 
-    vkGetSwapchainImagesKHR(context->device, context->swapchain, &context->swapChainImageCount, nullptr);
-    context->swapChainImages = calloc(sizeof(VkImage), context->swapChainImageCount);
-
-    vkGetSwapchainImagesKHR(context->device, context->swapchain, &context->swapChainImageCount, context->swapChainImages);
+    uint32_t swapChainImageCount;
+    vkGetSwapchainImagesKHR(device, swapchain, &swapChainImageCount, nullptr);
+    *toStore = (VkImage *)calloc(swapChainImageCount, sizeof(VkImage));
+    vkGetSwapchainImagesKHR(device, swapchain, &swapChainImageCount, *toStore);
+    return swapChainImageCount;
 }
 
-VkImageView *createImageViews(uint32_t imageCount, VkImage *swapChainImages, VkFormat format, VkDevice device) {
+VkImageView *createSwapChainImageViews(uint32_t imageCount, VkImage *swapChainImages, VkFormat format, VkDevice device) {
     VkImageView *swapChainImageViews = calloc(sizeof(VkImageView), imageCount);
 
     for (uint32_t i = 0; i < imageCount; i++) {
