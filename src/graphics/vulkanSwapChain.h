@@ -7,6 +7,15 @@
 
 #include "vulkanDefs.h"
 
+typedef struct SwapChainSupportDetails {
+	VkSurfaceCapabilitiesKHR capabilities;
+	uint32_t formatCount;
+	VkSurfaceFormatKHR *formats;
+
+	uint32_t presentModeCount;
+	VkPresentModeKHR *presentModes;
+} swapChainSupportDetails;
+
 void createSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, vgeWindow *window, VkSwapchainKHR *toCreate);
 
 uint32_t getSwapChainImages(VkSwapchainKHR swapchain, VkDevice device, VkImage **toStore);

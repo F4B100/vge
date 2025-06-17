@@ -6,6 +6,7 @@
 #define VULKANLOGICALDEVICE_H
 
 #include "vulkanDefs.h"
+#include "vulkanQueues.h"
 
 #define NUM_DEVICE_EXTENSIONS 1
 

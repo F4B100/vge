@@ -6,6 +6,7 @@
 #include "vulkanQueues.h"
 #include "vulkanSwapChain.h"
 #include <string.h>
+#include <stdio.h>
 
 char *deviceExtensions[] = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME

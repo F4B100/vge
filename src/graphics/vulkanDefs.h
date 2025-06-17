@@ -7,40 +7,27 @@
 
 #include <vulkan/vulkan.h>
 #include "../window/vgeWindow.h"
+#include "cglm/call/vec3.h"
 
 #define TRUE 1
 #define FALSE 0
 
 #define NUM_DEVICE_EXTENSIONS 1
 #define QUEUE_NUMBER 2
+#define SPIRV_MAGIC_CONSTANT 0x07230203
+#define SHADER_FILE_MAX_SIZE 8192u
 
-typedef struct QueueInfo {
-    uint8_t hasQueueFamily;
-    uint32_t queueFamilyIndex;
-    float queuePriority;
-} queueInfo;
+typedef struct Vertex_3D {
+    vec3 pos;
+    vec3 color;
+    vec2 texCoords;
+} vertex3D;
 
-/*
- * the following is a list of what queue each index represents:
- * 0 - GraphicsQueue / Transfer Queue
- * 1 - PresentationQueue
- */
-
-#define GRAPHICS_QUEUE 0
-#define PRESENTATION_QUEUE 1
-
-typedef struct VkQueueFamilyIndices {
-    queueInfo queueInfoArr[QUEUE_NUMBER];
-} queueFamilyIndices;
-
-typedef struct SwapChainSupportDetails {
-    VkSurfaceCapabilitiesKHR capabilities;
-    uint32_t formatCount;
-    VkSurfaceFormatKHR *formats;
-
-    uint32_t presentModeCount;
-    VkPresentModeKHR *presentModes;
-} swapChainSupportDetails;
+typedef struct Vertex_2D {
+    vec2 pos;
+    vec3 color;
+    vec2 texCoords;
+} vertex2D;
 
 typedef struct VulkanContext {
     VkInstance instance;

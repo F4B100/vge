@@ -3,6 +3,7 @@
 //
 
 #include "vulkanQueues.h"
+#include <stdio.h>
 
 queueFamilyIndices *searchQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface) {
 

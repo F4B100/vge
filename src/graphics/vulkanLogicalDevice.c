@@ -3,8 +3,7 @@
 //
 
 #include "vulkanLogicalDevice.h"
-
-#include "vulkanQueues.h"
+#include <stdio.h>
 
 char * logicalDeviceExtensions [] = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
