@@ -38,9 +38,15 @@ typedef struct VulkanContext {
     VkQueue queues[QUEUE_NUMBER];
 
     VkSwapchainKHR swapchain;
+    VkExtent2D swapChainExtent;
     uint32_t swapChainImageCount;
     VkImageView *swapChainImageViews;
     VkImage *swapChainImages;
+    VkFramebuffer *frameBuffers;
+
+    VkRenderPass renderPass;
+
+    VkCommandPool commandPool;
 
     vgeWindow *window;
 } vulkanContext;

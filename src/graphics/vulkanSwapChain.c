@@ -102,7 +102,7 @@ VkExtent2D chooseSwapExtent(swapChainSupportDetails *supportDetails, vgeWindow *
     return actualExtent;
 }
 
-void createSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, vgeWindow *window, VkSwapchainKHR *toCreate) {
+void createSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, vgeWindow *window, VkExtent2D *swapExtent, VkSwapchainKHR *toCreate) {
 
     swapChainSupportDetails *details = querySwapChainSupport(physicalDevice, surface);
 
@@ -111,6 +111,8 @@ void createSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurface
     VkSurfaceFormatKHR * surfaceFormat = details->formats + surfaceFormatIndex;
     VkPresentModeKHR * presentMode = details->presentModes + presentModeIndex;
     VkExtent2D extent = chooseSwapExtent(details, window);
+
+    *swapExtent = extent;
 
     uint32_t imageCount = details->capabilities.minImageCount + 1;
 
@@ -149,7 +151,7 @@ uint32_t getSwapChainImages(VkSwapchainKHR swapchain, VkDevice device, VkImage *
     return swapChainImageCount;
 }
 
-VkImageView *createSwapChainImageViews(uint32_t imageCount, VkImage *swapChainImages, VkFormat format, VkDevice device) {
+void createSwapChainImageViews(uint32_t imageCount, VkImage *swapChainImages, VkFormat format, VkDevice device, VkImageView **toCreate) {
     VkImageView *swapChainImageViews = calloc(sizeof(VkImageView), imageCount);
 
     for (uint32_t i = 0; i < imageCount; i++) {
@@ -173,6 +175,54 @@ VkImageView *createSwapChainImageViews(uint32_t imageCount, VkImage *swapChainIm
             printf("failed to create image views!");
         }
     }
+    *toCreate = swapChainImageViews;
+}
 
-    return swapChainImageViews;
+void createFramebuffers(uint32_t imageCount, VkImageView *imageViews, VkDevice device, VkRenderPass renderPass, VkExtent2D extent, VkFramebuffer** toCreate) {
+    VkFramebuffer *frameBuffers = malloc(imageCount * sizeof(VkFramebuffer));
+    for (size_t i = 0; i < imageCount; i++) {
+        VkFramebufferCreateInfo framebufferInfo = {
+            .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+            .renderPass = renderPass,
+            .attachmentCount = 1,
+            .pAttachments = imageViews + i,
+            .width = extent.width,
+            .height = extent.height,
+            .layers = 1
+        };
+
+        if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &frameBuffers[i])) {
+            printf("failed to create framebuffer!\n");
+        }
+    }
+    *toCreate = frameBuffers;
+}
+
+void cleanupSwapChain(VkFramebuffer *frameBuffers, VkImageView *imageViews, VkImage *swapChainImages, VkSwapchainKHR swapChain, uint32_t swapChainImageCount, VkDevice device) {
+    for (size_t i = 0; i < swapChainImageCount; i++) {
+        vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
+    }
+    free(frameBuffers);
+
+    for (size_t i = 0; i < swapChainImageCount; i++) {
+        vkDestroyImageView(device, imageViews[i], nullptr);
+    }
+
+    free(imageViews);
+    free(swapChainImages);
+
+    vkDestroySwapchainKHR(device, swapChain, nullptr);
+}
+
+/**
+ * WARNING: only call this after cleanupSwapChain();
+ * or else memory leaks will happen and the
+ * vulkan validation layers will scream
+ */
+void createFullSwapChain(VkRenderPass renderPass, VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, vgeWindow *window, VkExtent2D *swapExtent, VkSwapchainKHR*toCreate, uint32_t *numImages, VkImage **swapImages, VkFormat swapFormat, VkImageView **swapImageViews, VkFramebuffer**frameBuffers) {
+    vkDeviceWaitIdle(device);
+    createSwapChain(physicalDevice, device, surface, window, swapExtent, toCreate);
+    *numImages = getSwapChainImages(*toCreate, device, swapImages);
+    createSwapChainImageViews(*numImages, *swapImages, swapFormat, device, swapImageViews);
+    createFramebuffers(*numImages, *swapImageViews, device, renderPass, *swapExtent, frameBuffers);
 }

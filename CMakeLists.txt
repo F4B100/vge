@@ -10,8 +10,6 @@ file(GLOB_RECURSE SHADERS "shaders/*.frag" "shaders/*.vert" "shaders/*.geom" "sh
 
 set(SPIRV_OUTPUTS "")
 
-file(MAKE_DIRECTORY "shaders_bin")
-
 find_program(GLSLANG_VALIDATOR glslangValidator REQUIRED)
 
 foreach (shader ${SHADERS})
@@ -19,7 +17,7 @@ foreach (shader ${SHADERS})
     get_filename_component(FILE_NAME_WE ${shader} NAME_WE)
     get_filename_component(dir ${shader} DIRECTORY)
 
-	set(SPIRV "shaders_bin/${FILE_NAME}.spv")
+	set(SPIRV "${CMAKE_HOME_DIRECTORY}/shaders_bin/${FILE_NAME}.spv")
 	list(APPEND SPIRV_OUTPUTS ${SPIRV})
 
 	add_custom_command(

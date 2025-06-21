@@ -16,11 +16,20 @@ typedef struct SwapChainSupportDetails {
 	VkPresentModeKHR *presentModes;
 } swapChainSupportDetails;
 
-void createSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, vgeWindow *window, VkSwapchainKHR *toCreate);
+void createFullSwapChain(VkRenderPass renderPass, VkPhysicalDevice physicalDevice, VkDevice device,
+	VkSurfaceKHR surface, vgeWindow *window, VkExtent2D *swapExtent, VkSwapchainKHR*toCreate, uint32_t *numImages,
+	VkImage **swapImages, VkFormat swapFormat, VkImageView **swapImageViews, VkFramebuffer**frameBuffers);
+
+void cleanupSwapChain(VkFramebuffer *frameBuffers, VkImageView *imageViews, VkImage *swapChainImages,
+	VkSwapchainKHR swapChain, uint32_t swapChainImageCount, VkDevice device);
+
+void createSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, vgeWindow *window, VkExtent2D *swapExtent, VkSwapchainKHR *toCreate);
 
 uint32_t getSwapChainImages(VkSwapchainKHR swapchain, VkDevice device, VkImage **toStore);
 
-VkImageView *createSwapChainImageViews(uint32_t imageCount, VkImage *swapChainImages, VkFormat format, VkDevice device);
+void createSwapChainImageViews(uint32_t imageCount, VkImage *swapChainImages, VkFormat format, VkDevice device, VkImageView **toCreate);
+
+void createFramebuffers(uint32_t imageCount, VkImageView *imageViews, VkDevice device, VkRenderPass renderPass, VkExtent2D extent, VkFramebuffer** toCreate) ;
 
 swapChainSupportDetails* createSwapChainSupportDetails(const uint32_t sizeFormats, const uint32_t sizeModes);
 void freeSwapChainSupportDetails(swapChainSupportDetails* details);

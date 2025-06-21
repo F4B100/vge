@@ -8,8 +8,6 @@
 #include "vulkanDefs.h"
 
 vulkanContext *initVulkan(vgeWindow *window);
-
-void createVulkanInstance(vulkanContext *context);
-
+void destroyVulkan(vulkanContext *context);
 
 #endif //VULKANINIT_H

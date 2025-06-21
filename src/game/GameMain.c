@@ -27,7 +27,21 @@ void GameInit() {
 
     info.graphics = context;
 
+    VgePipelineGraphicsCreateInfo pipelineInfo = {
+        .device = context->device,
+        .fragShaderPath = "shaders_bin/rectangle.frag.spv",
+        .vertShaderPath = "shaders_bin/rectangle.vert.spv",
+        .colorFormat = VK_FORMAT_R8G8B8_SRGB,
+        .viewportExtent = context->swapChainExtent
+    };
+
+    VgePipelineGraphics *pipeline = createGraphicsPipeline(&pipelineInfo);
+
+    info.graphicsP = pipeline;
+
     GameStart(&info);
+
+    destroyVulkan(context);
 }
 void GameStart(gameInfo *info) {
     double lastFrame = glfwGetTime();

@@ -5,12 +5,13 @@
 #include "vulkanPipeline.h"
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 spirVCode *readSPIRVFile(char *filename) {
-    FILE * file = fopen(filename, "rb");
+    FILE * file = fopen(filename, "r");
 
     if (!file) {
-        printf("File opening failed errno: %d\n", errno);
+        printf("File opening failed errno: %d | %s\n", errno, filename);
         return nullptr;
     }
 

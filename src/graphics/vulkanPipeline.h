@@ -29,5 +29,7 @@ typedef struct VgePipelineGraphics_t {
 } VgePipelineGraphics;
 
 VgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info);
+void createDescriptorPool(VkDevice device, VkDescriptorPool *toCreate);
+void createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkRenderPass *toCreate);
 
 #endif //VULKANPIPELINE_H

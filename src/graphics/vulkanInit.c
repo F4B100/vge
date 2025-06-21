@@ -4,8 +4,12 @@
 
 #include <stdio.h>
 #include "vulkanInit.h"
+
+#include "vulkanCommands.h"
+#include "vulkanInstance.h"
 #include "vulkanPhysicalDevice.h"
 #include "vulkanLogicalDevice.h"
+#include "vulkanPipeline.h"
 #include "vulkanSwapChain.h"
 #include "vulkanQueues.h"
 
@@ -18,54 +22,106 @@ vulkanContext *initVulkan(vgeWindow *window) {
 
     context->window = window;
 
-    createVulkanInstance(context);
-    glfwCreateWindowSurface(context->instance, window->window, nullptr, &context->surface);
-    choosePhysicalDevice(context);
-    queueFamilyIndices *queueIndices = searchQueueFamilies(context->physicalDevice, context->surface);
-    createLogicalDevice(context->physicalDevice, queueIndices, QUEUE_NUMBER, &context->device);
-    createQueues(context->queues, queueIndices, QUEUE_NUMBER, context->device);
-    createSwapChain(context->physicalDevice, context->device, context->surface, context->window, &context->swapchain);
-    context->swapChainImageCount = getSwapChainImages(context->swapchain, context->device, &context->swapChainImages);
+    createVulkanInstance(
+        glfwGetWindowTitle(window->window),
+        &context->instance
+    );
 
-    context->swapChainImageViews = createSwapChainImageViews(
+    glfwCreateWindowSurface(
+        context->instance,
+        window->window,
+        nullptr,
+        &context->surface
+    );
+
+    choosePhysicalDevice(context);
+
+    queueFamilyIndices *queueIndices = searchQueueFamilies(
+        context->physicalDevice,
+        context->surface
+    );
+
+    createLogicalDevice(
+        context->physicalDevice,
+        queueIndices,
+        QUEUE_NUMBER,
+        &context->device
+    );
+
+    createQueues(
+        context->queues,
+        queueIndices,
+        QUEUE_NUMBER,
+        context->device
+    );
+
+    createSwapChain(
+        context->physicalDevice,
+        context->device,
+        context->surface,
+        context->window,
+        &context->swapChainExtent,
+        &context->swapchain
+    );
+
+    context->swapChainImageCount = getSwapChainImages(
+        context->swapchain,
+        context->device,
+        &context->swapChainImages
+    );
+
+    createSwapChainImageViews(
         context->swapChainImageCount,
         context->swapChainImages,
         VK_FORMAT_R8G8B8A8_SRGB,
-        context->device
+        context->device,
+        &context->swapChainImageViews
         );
+
+    createRenderPass(
+        context->device,
+        VK_FORMAT_R8G8B8_SRGB,
+        &context->renderPass
+    );
+
+    createFramebuffers(
+        context->swapChainImageCount,
+        context->swapChainImageViews,
+        context->device,
+        nullptr,
+        context->swapChainExtent,
+        &context->frameBuffers
+    );
+
+    createCommandPool(context->physicalDevice,
+        context->surface,
+        context->device,
+        queueIndices->queueInfoArr[0].queueFamilyIndex,
+        &context->commandPool
+    );
 
     return context;
 }
 
-void createVulkanInstance(vulkanContext *context) {
+void destroyVulkan(vulkanContext *context) {
+    vkDeviceWaitIdle(context->device);
 
-    VkApplicationInfo appInfo = {
-        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-        .apiVersion = VK_MAKE_VERSION(1, 4, 0),
-        .engineVersion = VK_MAKE_VERSION(0, 0, 1),
-        .applicationVersion = VK_MAKE_VERSION(0, 0, 1),
-        .pApplicationName = glfwGetWindowTitle(context->window->window),
-        .pEngineName = "vge"
-    };
+    cleanupSwapChain(
+        context->frameBuffers,
+        context->swapChainImageViews,
+        context->swapChainImages,
+        context->swapchain,
+        context->swapChainImageCount,
+        context->device);
 
-    uint32_t glfwExtensionCount = 0;
-    const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+    vkDestroyCommandPool(context->device, context->commandPool, nullptr);
 
-    for (int i = 0; i < glfwExtensionCount; ++i) {
-        printf("%s\n", glfwExtensions[i]);
-    }
+    vkDestroyRenderPass(context->device, context->renderPass, nullptr);
 
-    VkInstanceCreateInfo createInfo = {
-        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-        .enabledExtensionCount = glfwExtensionCount,
-        .ppEnabledExtensionNames = glfwExtensions,
-        .pApplicationInfo = &appInfo,
-        .enabledLayerCount = 0,
-        .ppEnabledLayerNames = nullptr
-    };
+    vkDestroyDevice(context->device, nullptr);
 
-    if (vkCreateInstance(&createInfo, nullptr, &context->instance)) {
-        fprintf(stderr, "Instance Creation Failed\n");
-    }
+    vkDestroySurfaceKHR(context->instance, context->surface, nullptr);
+    vkDestroyInstance(context->instance, nullptr);
+
+    free(context);
 }
-

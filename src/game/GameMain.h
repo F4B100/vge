@@ -5,12 +5,13 @@
 #ifndef GAMEMAIN_H
 #define GAMEMAIN_H
 
-#include "../graphics/vulkanInit.h"
+#include "../graphics/vgeGraphics.h"
 #include "../window/vgeWindow.h"
 
 typedef struct GameInfo {
     vgeWindow *window;
     vulkanContext *graphics;
+    VgePipelineGraphics *graphicsP;
     double deltaTime;
     uint32_t frameCount;
     double timeElapsed;
