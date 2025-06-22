@@ -5,7 +5,6 @@
 #include "vulkanPipeline.h"
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
 
 spirVCode *readSPIRVFile(char *filename) {
     FILE * file = fopen(filename, "r");
@@ -32,12 +31,7 @@ spirVCode *readSPIRVFile(char *filename) {
         return nullptr;
     }
 
-    if (fread(contents, size, 1, file) != 1) {
-        printf("File read failed");
-        free(contents);
-        fclose(file);
-        return nullptr;
-    }
+    fread(contents, size, 1, file);
 
     fclose(file);
 
@@ -48,6 +42,11 @@ spirVCode *readSPIRVFile(char *filename) {
     }
 
     spirVCode *code = malloc(sizeof(spirVCode));
+    if (!code) {
+        printf("Memory allocation failed");
+        fclose(file);
+        return nullptr;
+    }
     code->code = contents;
     code->size = size;
     return code;

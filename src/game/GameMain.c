@@ -5,6 +5,9 @@
 #include "GameMain.h"
 #include <stdio.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 void GameInit() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -31,13 +34,15 @@ void GameInit() {
         .device = context->device,
         .fragShaderPath = "shaders_bin/rectangle.frag.spv",
         .vertShaderPath = "shaders_bin/rectangle.vert.spv",
-        .colorFormat = VK_FORMAT_R8G8B8_SRGB,
+        .colorFormat = VK_FORMAT_R8G8B8A8_SRGB,
         .viewportExtent = context->swapChainExtent
     };
 
     VgePipelineGraphics *pipeline = createGraphicsPipeline(&pipelineInfo);
 
     info.graphicsP = pipeline;
+
+    info.frameCount = 0;
 
     GameStart(&info);
 

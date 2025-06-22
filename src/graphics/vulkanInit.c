@@ -80,7 +80,7 @@ vulkanContext *initVulkan(vgeWindow *window) {
 
     createRenderPass(
         context->device,
-        VK_FORMAT_R8G8B8_SRGB,
+        VK_FORMAT_R8G8B8A8_SRGB,
         &context->renderPass
     );
 
