@@ -10,7 +10,7 @@ file(GLOB_RECURSE SHADERS "shaders/*.frag" "shaders/*.vert" "shaders/*.geom" "sh
 
 set(SPIRV_OUTPUTS "")
 
-find_program(GLSLANG_VALIDATOR glslangValidator REQUIRED)
+find_program(GLSLC glslc REQUIRED)
 
 foreach (shader ${SHADERS})
 	get_filename_component(FILE_NAME ${shader} NAME)
@@ -22,7 +22,7 @@ foreach (shader ${SHADERS})
 
 	add_custom_command(
         OUTPUT ${SPIRV}
-        COMMAND ${GLSLANG_VALIDATOR} -V ${shader} -o ${SPIRV}
+        COMMAND ${GLSLC} ${shader} -o ${SPIRV}
         DEPENDS ${shader}
         COMMENT "Compiling shader ${shader} to SPIR-V ${SPIRV}"
         VERBATIM

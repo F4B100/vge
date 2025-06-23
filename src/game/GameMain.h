@@ -12,6 +12,12 @@ typedef struct GameInfo {
     vgeWindow *window;
     vulkanContext *graphics;
     VgePipelineGraphics *graphicsP;
+
+    uint32_t frameContexCount;
+    uint32_t currentFrame;
+    frameContext *frameContext;
+
+
     double deltaTime;
     uint32_t frameCount;
     double timeElapsed;

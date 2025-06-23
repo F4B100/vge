@@ -9,16 +9,6 @@ char * logicalDeviceExtensions [] = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
-const char * logicalDeviceLayers [] = {
-    "VK_LAYER_KHRONOS_validation"
-};
-
-#ifdef NDEBUG
-    const bool enableValidationLayers = false;
-#else
-    const bool enableValidationLayers = true;
-#endif
-
 void createLogicalDevice(VkPhysicalDevice physicalDevice, queueFamilyIndices *queueIndices, uint32_t numQueues, VkDevice *toCreate) {
 
     VkDeviceQueueCreateInfo *queueCreateInfo = calloc(sizeof(VkDeviceQueueCreateInfo), numQueues);
@@ -30,12 +20,6 @@ void createLogicalDevice(VkPhysicalDevice physicalDevice, queueFamilyIndices *qu
         queueCreateInfo[i].queueFamilyIndex = queueIndices->queueInfoArr[i].queueFamilyIndex;
     }
 
-    uint32_t layerCount = 0;
-    if (enableValidationLayers) {
-        layerCount = 1;
-    }
-
-
     VkDeviceCreateInfo deviceCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
         .pNext = nullptr,
@@ -46,7 +30,7 @@ void createLogicalDevice(VkPhysicalDevice physicalDevice, queueFamilyIndices *qu
         .enabledExtensionCount = NUM_DEVICE_EXTENSIONS,
         .ppEnabledExtensionNames = (const char * const*)logicalDeviceExtensions,
         .enabledLayerCount = 0,
-        .ppEnabledLayerNames = logicalDeviceLayers,
+        .ppEnabledLayerNames = nullptr,
     };
 
     VkResult res = vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, toCreate);

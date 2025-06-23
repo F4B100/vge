@@ -19,6 +19,7 @@ typedef struct VgePipelineGraphicsCreateInfo_t {
 	VkExtent2D viewportExtent;
 	VkDevice device;
 	VkFormat colorFormat;
+	VkRenderPass renderPass;
 } VgePipelineGraphicsCreateInfo;
 
 typedef struct VgePipelineGraphics_t {
@@ -31,5 +32,6 @@ typedef struct VgePipelineGraphics_t {
 VgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info);
 void createDescriptorPool(VkDevice device, VkDescriptorPool *toCreate);
 void createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkRenderPass *toCreate);
+void destroyGraphicsPipeline(VkDevice device, VgePipelineGraphics *pipeline);
 
 #endif //VULKANPIPELINE_H

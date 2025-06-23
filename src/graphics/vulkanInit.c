@@ -13,7 +13,6 @@
 #include "vulkanSwapChain.h"
 #include "vulkanQueues.h"
 
-
 vulkanContext *initVulkan(vgeWindow *window) {
     vulkanContext * context = calloc(sizeof(vulkanContext), 1);
     if (!context) {
@@ -88,7 +87,7 @@ vulkanContext *initVulkan(vgeWindow *window) {
         context->swapChainImageCount,
         context->swapChainImageViews,
         context->device,
-        nullptr,
+        context->renderPass,
         context->swapChainExtent,
         &context->frameBuffers
     );
@@ -106,6 +105,10 @@ vulkanContext *initVulkan(vgeWindow *window) {
 void destroyVulkan(vulkanContext *context) {
     vkDeviceWaitIdle(context->device);
 
+    #ifndef NDEBUG
+        DestroyDebugUtilsMessengerEXT(context->instance, context->debugMessenger, nullptr);
+    #endif
+
     cleanupSwapChain(
         context->frameBuffers,
         context->swapChainImageViews,
@@ -114,9 +117,9 @@ void destroyVulkan(vulkanContext *context) {
         context->swapChainImageCount,
         context->device);
 
-    vkDestroyCommandPool(context->device, context->commandPool, nullptr);
-
     vkDestroyRenderPass(context->device, context->renderPass, nullptr);
+
+    vkDestroyCommandPool(context->device, context->commandPool, nullptr);
 
     vkDestroyDevice(context->device, nullptr);
 

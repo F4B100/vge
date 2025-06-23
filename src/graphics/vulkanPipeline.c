@@ -7,7 +7,7 @@
 #include <string.h>
 
 spirVCode *readSPIRVFile(char *filename) {
-    FILE * file = fopen(filename, "r");
+    FILE * file = fopen(filename, "rb");
 
     if (!file) {
         printf("File opening failed errno: %d | %s\n", errno, filename);
@@ -31,7 +31,12 @@ spirVCode *readSPIRVFile(char *filename) {
         return nullptr;
     }
 
-    fread(contents, size, 1, file);
+    if (fread(contents, size, 1, file) != 1) {
+        printf("Error with fread on SpirvFile: %s\n", filename);
+        fclose(file);
+        free(contents);
+        return nullptr;
+    }
 
     fclose(file);
 
@@ -295,7 +300,7 @@ VgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info)
 
     VkPipelineRasterizationStateCreateInfo rasterizer = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-        .depthClampEnable = VK_TRUE,
+        .depthClampEnable = VK_FALSE,
         .rasterizerDiscardEnable = VK_FALSE,
         .polygonMode = VK_POLYGON_MODE_FILL,
         .lineWidth = 1.0f,
@@ -356,10 +361,6 @@ VgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info)
         printf("failed to create pipeline layout!");
     }
 
-    VkRenderPass renderPass;
-
-    createRenderPass(info->device, info->colorFormat, &renderPass);
-
     VkGraphicsPipelineCreateInfo pipelineInfo = {
         .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
         .stageCount = 2,
@@ -373,13 +374,13 @@ VgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info)
         .pColorBlendState = &colorBlending,
         .pDynamicState = &dynamicState,
         .layout = newPipeline->pipelineLayout,
-        .renderPass = renderPass,
+        .renderPass = info->renderPass,
         .subpass = 0,
         .basePipelineHandle = VK_NULL_HANDLE,
         .basePipelineIndex = -1
     };
 
-    if (vkCreateGraphicsPipelines(info->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &newPipeline->pipeline)) {
+    if (vkCreateGraphicsPipelines(info->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &newPipeline->pipeline) != VK_SUCCESS) {
         printf("failed to create graphics pipeline!\n");
     }
 
@@ -392,5 +393,14 @@ VgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info)
     free(codeFrag);
     free(bindingDescriptor);
     free(attributeDescriptor);
+    vkDestroyDescriptorSetLayout(info->device, descriptorSetLayout, nullptr);
     return newPipeline;
+}
+
+void destroyGraphicsPipeline(VkDevice device, VgePipelineGraphics *pipeline) {
+    vkDestroyShaderModule(device, pipeline->fragShaderModule, nullptr);
+    vkDestroyShaderModule(device, pipeline->vertShaderModule, nullptr);
+
+    vkDestroyPipelineLayout(device, pipeline->pipelineLayout, nullptr);
+    vkDestroyPipeline(device, pipeline->pipeline, nullptr);
 }

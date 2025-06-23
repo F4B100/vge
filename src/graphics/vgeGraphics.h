@@ -12,5 +12,6 @@
 #include "vulkanLogicalDevice.h"
 #include "vulkanPhysicalDevice.h"
 #include "vulkanSwapChain.h"
+#include "vulkanRender.h"
 
 #endif //VGEGRAPHICS_H
