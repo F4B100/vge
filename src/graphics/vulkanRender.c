@@ -40,7 +40,7 @@ void destroyFrameContext(frameContext *frameContext, VkDevice device, uint32_t n
 		vkDestroySemaphore(device, frameContext[i].renderFinishedSemaphore, nullptr);
 		vkWaitForFences(device, 1, &frameContext[i].RenderFinishedFence, VK_TRUE, UINT64_MAX);
 		vkDestroyFence(device, frameContext[i].RenderFinishedFence, nullptr);
-		// Begin command buffer recording
+
 		VkCommandBufferBeginInfo beginInfo = {
 			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
 			.flags = 0,
@@ -56,7 +56,6 @@ void destroyFrameContext(frameContext *frameContext, VkDevice device, uint32_t n
 }
 
 void startFrame(frameContext *frameContext, VkDevice device, VkSwapchainKHR swapChain, VkImage *swapChainImages) {
-	printf("Waiting on fence = %p\n", frameContext->RenderFinishedFence);
 	vkWaitForFences(device, 1, &frameContext->RenderFinishedFence, VK_TRUE, UINT64_MAX);
 
 	VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, frameContext->imageAvailableSemaphore, VK_NULL_HANDLE, &frameContext->imageIndex);
@@ -65,7 +64,6 @@ void startFrame(frameContext *frameContext, VkDevice device, VkSwapchainKHR swap
 
 	vkResetCommandBuffer(frameContext->commandBuffer, 0);
 
-	// Begin command buffer recording
 	VkCommandBufferBeginInfo beginInfo = {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
 		.flags = 0,
@@ -77,14 +75,13 @@ void startFrame(frameContext *frameContext, VkDevice device, VkSwapchainKHR swap
 		return;
 	}
 
-	// Transition image layout to VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 	VkImageMemoryBarrier barrier = {
 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
 		.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 		.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
 		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-		.image = swapChainImages[frameContext->imageIndex], // You'll need to store swapChainImages
+		.image = swapChainImages[frameContext->imageIndex],
 		.subresourceRange = {
 			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 			.baseMipLevel = 0,

@@ -72,8 +72,6 @@ void GameStart(gameInfo *info) {
 
         info->currentFrame = (info->currentFrame + 1) % info->graphics->swapChainImageCount;
 
-
-
         glfwSwapBuffers(info->window->window);
         glfwPollEvents();
     }
