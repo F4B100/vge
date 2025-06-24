@@ -20,6 +20,10 @@ frameContext *createFrameContext(uint32_t numberFrame, VkDevice device, VkComman
 void destroyFrameContext(frameContext *frameContext, VkDevice device, uint32_t numberFrames);
 
 void startFrame(frameContext *frameContext, VkDevice device, VkSwapchainKHR swapChain, VkImage *swapChainImages);
+
+void renderPassStart(frameContext *frameContext, VkRenderPass renderPass, VkExtent2D extent, VkFramebuffer *frameBuffers, VkClearValue *clearValues);
+void renderPassEnd(frameContext *frameContext);
+
 void endFrame(frameContext *frameContext, VkSwapchainKHR swapChain, VkQueue presentQueue, VkQueue graphicsQueue);
 
 #endif //VULKANRENDER_H

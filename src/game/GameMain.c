@@ -77,6 +77,22 @@ void GameStart(gameInfo *info) {
     }
 }
 void GameLoop(gameInfo *info) {
+
+    VkClearColorValue color = {
+        .float32 = {
+            0.0f,
+            info->timeElapsed * 2.0f - 1.0f,
+            info->timeElapsed,
+            1.0f
+        }
+    };
+
+    VkClearValue clearColor = {
+        .color = color
+    };
+
+    renderPassStart(&info->frameContext[info->currentFrame], info->graphics->renderPass, info->graphics->swapChainExtent, info->graphics->frameBuffers, &clearColor);
+
     if (info->timeElapsed > 1.0f) {
         printf("fps: %d\n", info->frameCount);
         info->timeElapsed -= 1.0f;
@@ -84,4 +100,6 @@ void GameLoop(gameInfo *info) {
     }
     info->timeElapsed += info->deltaTime;
     info->frameCount++;
+
+    renderPassEnd(&info->frameContext[info->currentFrame]);
 }

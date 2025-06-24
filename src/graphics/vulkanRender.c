@@ -100,8 +100,27 @@ void startFrame(frameContext *frameContext, VkDevice device, VkSwapchainKHR swap
 		0, nullptr,
 		1, &barrier
 	);
-
 }
+
+void renderPassStart(frameContext *frameContext, VkRenderPass renderPass, VkExtent2D extent, VkFramebuffer *frameBuffers, VkClearValue *clearValues) {
+	VkRenderPassBeginInfo renderPassInfo = {
+		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+		.renderPass = renderPass,
+		.framebuffer = frameBuffers[frameContext->imageIndex],
+		.renderArea.offset = {0, 0},
+		.renderArea.extent = extent,
+		.clearValueCount = 1,
+		.pClearValues = clearValues
+	};
+
+	vkCmdBeginRenderPass(frameContext->commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+void renderPassEnd(frameContext *frameContext) {
+
+	vkCmdEndRenderPass(frameContext->commandBuffer);
+}
+
 void endFrame(frameContext *frameContext, VkSwapchainKHR swapChain, VkQueue presentQueue, VkQueue graphicsQueue) {
 
 	if (vkEndCommandBuffer(frameContext->commandBuffer) != VK_SUCCESS) {
