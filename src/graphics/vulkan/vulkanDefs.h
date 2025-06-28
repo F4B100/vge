@@ -6,7 +6,7 @@
 #define VULKANDEFS_H
 
 #include <vulkan/vulkan.h>
-#include "../window/vgeWindow.h"
+#include "../../window/vgeWindow.h"
 #include "cglm/call/vec3.h"
 
 #define TRUE 1

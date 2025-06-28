@@ -117,7 +117,6 @@ void renderPassStart(frameContext *frameContext, VkRenderPass renderPass, VkExte
 }
 
 void renderPassEnd(frameContext *frameContext) {
-
 	vkCmdEndRenderPass(frameContext->commandBuffer);
 }
 

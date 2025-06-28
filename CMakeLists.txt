@@ -3,6 +3,8 @@ project(vge C ASM)
 
 set(CMAKE_C_STANDARD 23)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static -static-libgcc")
+
 include(cmake/CPM.cmake)
 
 file(GLOB_RECURSE SRC_FILES "src/*.c" "src/*.h" "src/*.asm")
@@ -51,7 +53,7 @@ CPMAddPackage(
 
 add_library(stb INTERFACE)
 
-find_package(Vulkan REQUIRED)
+find_package(Vulkan)
 
 add_executable(vge main.c ${SRC_FILES})
 

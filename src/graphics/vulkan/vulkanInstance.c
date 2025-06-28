@@ -5,6 +5,10 @@
 #include "vulkanInstance.h"
 
 #ifdef NDEBUG
+    #define VALIDATION_LAYERS_COUNT 0
+    const char * validationLayers[] = {};
+    #define VALIDATION_EXTENSIONS_COUNT 0
+    const char * validationExtensions[] = {};
     const bool enableValidationLayers = false;
 #else
     const bool enableValidationLayers = true;
@@ -24,9 +28,6 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData) {
 
-    if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) {
-        return VK_FALSE;
-    }
     fprintf(stderr, "validation layer: %s\n", pCallbackData->pMessage);
 
     return VK_FALSE;
@@ -87,9 +88,7 @@ void createVulkanInstance(const char *windowName, VkInstance *toCreate) {
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-    #ifndef NDEBUG
-        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};
-    #endif
+    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};
 
     uint32_t extensionCount;
     const char **extensionNames;
@@ -114,6 +113,15 @@ void createVulkanInstance(const char *windowName, VkInstance *toCreate) {
         createInfo.pNext = &debugCreateInfo;
         createInfo.enabledLayerCount = VALIDATION_LAYERS_COUNT;
         createInfo.ppEnabledLayerNames = validationLayers;
+    } else {
+        extensionCount = glfwExtensionCount;
+        extensionNames = calloc(extensionCount, sizeof(char **));
+        for (uint32_t i = 0; i < glfwExtensionCount; i++) {
+            extensionNames[i] = glfwExtensions[i];
+        }
+        for (uint32_t i = 0; i < extensionCount; i++) {
+            printf("%s\n", extensionNames[i]);
+        }
     }
 
     createInfo.enabledExtensionCount = extensionCount;

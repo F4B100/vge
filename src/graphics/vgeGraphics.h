@@ -5,13 +5,15 @@
 #ifndef VGEGRAPHICS_H
 #define VGEGRAPHICS_H
 
-#include "vulkanDefs.h"
-#include "vulkanInit.h"
-#include "vulkanPipeline.h"
-#include "vulkanQueues.h"
-#include "vulkanLogicalDevice.h"
-#include "vulkanPhysicalDevice.h"
-#include "vulkanSwapChain.h"
-#include "vulkanRender.h"
+#ifdef VGE_USE_VULKAN
+#include "vulkan/vulkanDefs.h"
+#include "vulkan/vulkanInit.h"
+#include "vulkan/vulkanPipeline.h"
+#include "vulkan/vulkanQueues.h"
+#include "vulkan/vulkanLogicalDevice.h"
+#include "vulkan/vulkanPhysicalDevice.h"
+#include "vulkan/vulkanSwapChain.h"
+#include "vulkan/vulkanRender.h"
+#endif
 
 #endif //VGEGRAPHICS_H

@@ -2,18 +2,39 @@
 // Created by fabio on 22-05-2025.
 //
 
-#include "GameMain.h"
 #include <stdio.h>
+#include "GameMain.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+gameInfo info;
+
+void OnResize(GLFWwindow* window, int width, int height) {
+    printf("resized x:%d y:%d\n", width, height);
+    if (width == 0 || height == 0) {
+        return;
+    }
+    vkDeviceWaitIdle(info.graphics->device);
+    cleanupSwapChain(info.graphics->frameBuffers, info.graphics->swapChainImageViews, info.graphics->swapChainImages,
+        info.graphics->swapchain, info.graphics->swapChainImageCount, info.graphics->device);
+    createFullSwapChain(info.graphics->renderPass,
+        info.graphics->physicalDevice,
+        info.graphics->device,
+        info.graphics->surface,
+        info.window,
+        &info.graphics->swapChainExtent,
+        &info.graphics->swapchain,
+        &info.graphics->swapChainImageCount,
+        &info.graphics->swapChainImages,
+        VK_FORMAT_R8G8B8A8_SRGB,
+        &info.graphics->swapChainImageViews,
+        &info.graphics->frameBuffers
+        );
+}
 
 void GameInit() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    gameInfo info;
 
     info.window = vgeWindowInit(
         600, 800,
@@ -25,6 +46,8 @@ void GameInit() {
     glfwShowWindow(info.window->window);
 
     glfwMakeContextCurrent(info.window->window);
+
+    glfwSetWindowSizeCallback(info.window->window, OnResize);
 
     vulkanContext *context = initVulkan(info.window);
 
@@ -78,17 +101,13 @@ void GameStart(gameInfo *info) {
 }
 void GameLoop(gameInfo *info) {
 
-    VkClearColorValue color = {
-        .float32 = {
+    VkClearValue clearColor = {
+        .color = {
             0.0f,
-            info->timeElapsed * 2.0f - 1.0f,
-            info->timeElapsed,
+            (float) info->timeElapsed * 2.0f - 1.0f,
+            (float) info->timeElapsed,
             1.0f
         }
-    };
-
-    VkClearValue clearColor = {
-        .color = color
     };
 
     renderPassStart(&info->frameContext[info->currentFrame], info->graphics->renderPass, info->graphics->swapChainExtent, info->graphics->frameBuffers, &clearColor);

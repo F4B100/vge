@@ -25,6 +25,7 @@ typedef struct VgePipelineGraphicsCreateInfo_t {
 typedef struct VgePipelineGraphics_t {
 	VkPipeline pipeline;
 	VkPipelineLayout pipelineLayout;
+	VkDescriptorSet descriptorSetLayout;
 	VkShaderModule vertShaderModule;
 	VkShaderModule fragShaderModule;
 } VgePipelineGraphics;

@@ -5,6 +5,7 @@
 #ifndef GAMEMAIN_H
 #define GAMEMAIN_H
 
+#define VGE_USE_VULKAN
 #include "../graphics/vgeGraphics.h"
 #include "../window/vgeWindow.h"
 
