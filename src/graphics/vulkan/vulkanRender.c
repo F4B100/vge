@@ -120,6 +120,10 @@ void renderPassEnd(frameContext *frameContext) {
 	vkCmdEndRenderPass(frameContext->commandBuffer);
 }
 
+void drawIndexed() {
+	vkCmdDrawIndexed();
+}
+
 void endFrame(frameContext *frameContext, VkSwapchainKHR swapChain, VkQueue presentQueue, VkQueue graphicsQueue) {
 
 	if (vkEndCommandBuffer(frameContext->commandBuffer) != VK_SUCCESS) {
