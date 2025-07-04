@@ -121,7 +121,6 @@ void renderPassEnd(frameContext *frameContext) {
 }
 
 void drawIndexed() {
-	vkCmdDrawIndexed();
 }
 
 void endFrame(frameContext *frameContext, VkSwapchainKHR swapChain, VkQueue presentQueue, VkQueue graphicsQueue) {

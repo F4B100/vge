@@ -103,9 +103,9 @@ void GameLoop(gameInfo *info) {
 
     VkClearValue clearColor = {
         .color = {
-            0.0f,
-            (float) info->timeElapsed * 2.0f - 1.0f,
-            (float) info->timeElapsed,
+            (float) cos( glfwGetTime()),
+            ((float) cos(glfwGetTime() * 2.0f) + 1.0f) / 2.0f,
+            ((float) sin(glfwGetTime() * 2.0f) + 1.0f) / 2.0f,
             1.0f
         }
     };
