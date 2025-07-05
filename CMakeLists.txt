@@ -6,9 +6,27 @@ set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
 # Shaders Compile Section -------------------------------------------------------------------------
-include(cmake/Shaders.cmake)
+
 file(GLOB_RECURSE SHADERS "shaders/*.frag" "shaders/*.vert" "shaders/*.geom" "shaders/*.comp")
-CompileSpirVShaders(SHADERS)
+set(SPIRV_OUTPUTS "")
+
+foreach (shader ${SHADERS})
+	get_filename_component(FILE_NAME ${shader} NAME)
+	get_filename_component(FILE_NAME_WE ${shader} NAME_WE)
+	get_filename_component(dir ${shader} DIRECTORY)
+
+	set(SPIRV "${CMAKE_HOME_DIRECTORY}/shaders_bin/${FILE_NAME}.spv")
+	message("${CMAKE_HOME_DIRECTORY}/shaders_bin/${FILE_NAME}.spv")
+	list(APPEND SPIRV_OUTPUTS ${SPIRV})
+
+	add_custom_command(
+			OUTPUT ${SPIRV}
+			COMMAND ${GLSLC} ${shader} -o ${SPIRV}
+			DEPENDS ${shader}
+			COMMENT "Compiling shader ${shader} to SPIR-V ${SPIRV}"
+			VERBATIM
+	)
+endforeach()
 
 add_custom_target(CompileShaders ALL DEPENDS ${SPIRV_OUTPUTS})
 #--------------------------------------------------------------------------------------------------
