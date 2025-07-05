@@ -8,6 +8,8 @@
 #include "vulkanDefs.h"
 #include "vulkanCommands.h"
 
+
+
 typedef struct FrameContext {
 	uint32_t imageIndex;
 	VkCommandBuffer commandBuffer;
