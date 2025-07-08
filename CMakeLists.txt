@@ -5,6 +5,19 @@ set(CMAKE_C_STANDARD 23)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
+# Platform Detection ------------------------------------------------------------------------------
+
+if (WIN32)
+	add_compile_definitions(VGE_PLATFORM_WIN32)
+ELSEIF (LINUX)
+	message("WAYLAND!!!!!!!")
+	add_compile_definitions(VGE_PLATFORM_WAYLAND)
+ELSE ()
+
+ENDIF ()
+
+# -------------------------------------------------------------------------------------------------
+
 # Shaders Compile Section -------------------------------------------------------------------------
 
 file(GLOB_RECURSE SHADERS "shaders/*.frag" "shaders/*.vert" "shaders/*.geom" "shaders/*.comp")

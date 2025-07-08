@@ -71,11 +71,11 @@ void GameInit() {
 
     info.frameContexCount = info.graphics->swapChainImageCount;
 
-    info.frameContext = createFrameContext(info.frameContexCount, info.graphics->device, info.graphics->commandPool);
+    info.frameContext = createFrameContext(info.frameContexCount, info.graphics->swapChainImageCount, info.graphics->device, info.graphics->commandPool);
 
     GameStart(&info);
 
-    destroyFrameContext(info.frameContext, info.graphics->device, info.frameContexCount);
+    destroyFrameContext(info.frameContext, info.graphics->device, info.frameContexCount, info.graphics->swapChainImageCount);
 
     destroyGraphicsPipeline(context->device, pipeline);
     destroyVulkan(context);

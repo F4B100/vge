@@ -4,7 +4,7 @@
 
 #include "vulkanRender.h"
 
-frameContext *createFrameContext(uint32_t numberFrame, VkDevice device, VkCommandPool commandPool) {
+frameContext *createFrameContext(uint32_t numberFrame, uint32_t numberImages, VkDevice device, VkCommandPool commandPool) {
 	const VkSemaphoreCreateInfo semaphoreCreateInfo = {
 		.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
 		.pNext = NULL,
@@ -21,25 +21,33 @@ frameContext *createFrameContext(uint32_t numberFrame, VkDevice device, VkComman
 		.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 		.commandBufferCount = 1
 	};
+
+	swapChainSem *sem = calloc(numberImages, sizeof(swapChainSem));
+
+	for (int i = 0; i < numberImages; ++i) {
+		vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &sem[i].renderFinishedSemaphore);
+	}
+
 	frameContext *frameContext = calloc(numberFrame, sizeof(struct FrameContext));
 
 	for (int i = 0; i < numberFrame; i++) {
 		vkCreateFence(device, &fenceCreateInfo, nullptr, &frameContext[i].RenderFinishedFence);
-		printf("Created fence[%d] = %p\n", i, frameContext[i].RenderFinishedFence);
 		vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &frameContext[i].imageAvailableSemaphore);
-		vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &frameContext[i].renderFinishedSemaphore);
 		vkAllocateCommandBuffers(device, &allocInfo, &frameContext[i].commandBuffer);
+		frameContext[i].swapSemaphores = sem;
 	}
 
 	return frameContext;
 }
-void destroyFrameContext(frameContext *frameContext, VkDevice device, uint32_t numberFrames) {
+void destroyFrameContext(frameContext *frameContext, VkDevice device, uint32_t numberFrames, uint32_t numberImages) {
 	vkDeviceWaitIdle(device);
+	for (int i = 0; i < numberImages; ++i) {
+		vkDestroySemaphore(device, frameContext[0].swapSemaphores[i].renderFinishedSemaphore, nullptr);
+	}
 	for (int i = 0; i < numberFrames; i++) {
-		vkDestroySemaphore(device, frameContext[i].imageAvailableSemaphore, nullptr);
-		vkDestroySemaphore(device, frameContext[i].renderFinishedSemaphore, nullptr);
 		vkWaitForFences(device, 1, &frameContext[i].RenderFinishedFence, VK_TRUE, UINT64_MAX);
 		vkDestroyFence(device, frameContext[i].RenderFinishedFence, nullptr);
+		vkDestroySemaphore(device, frameContext[i].imageAvailableSemaphore, nullptr);
 
 		VkCommandBufferBeginInfo beginInfo = {
 			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -132,7 +140,7 @@ void endFrame(frameContext *frameContext, VkSwapchainKHR swapChain, VkQueue pres
 
 	VkSemaphore waitSemaphores[] = {frameContext->imageAvailableSemaphore};
 	VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-	VkSemaphore signalSemaphores[] = {frameContext->renderFinishedSemaphore};
+	VkSemaphore signalSemaphores[] = {frameContext->swapSemaphores[frameContext->imageIndex].renderFinishedSemaphore};
 
 	VkSubmitInfo submitInfo = {
 		.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,

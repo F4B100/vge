@@ -8,6 +8,8 @@
 #include "vgeWIndowDefs.h"
 #include <stdlib.h>
 
+void vgeInit();
+
 vgeWindow *vgeWindowInit(int32_t width, int32_t height, const int8_t *title, GLFWmonitor *monitor, GLFWwindow *share);
 
 
