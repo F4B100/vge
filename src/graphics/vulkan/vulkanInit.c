@@ -21,8 +21,12 @@ vulkanContext *initVulkan(vgeWindow *window) {
 
     context->window = window;
 
+	char *windowName;
+
+	vgeGetWindowName(window, &windowName);
+
     createVulkanInstance(
-        glfwGetWindowTitle(window->window),
+        windowName,
         &context->instance
     );
 

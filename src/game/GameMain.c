@@ -7,7 +7,7 @@
 
 gameInfo info;
 
-void OnResize(GLFWwindow* window, int width, int height) {
+void OnResize(pVgeWindow window, int width, int height) {
     printf("resized x:%d y:%d\n", width, height);
     if (width == 0 || height == 0) {
         return;
@@ -31,23 +31,14 @@ void OnResize(GLFWwindow* window, int width, int height) {
 }
 
 void GameInit() {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    vgeInit();
 
     info.window = vgeWindowInit(
         600, 800,
-        "hello world!",
-        nullptr,
-        nullptr
+        "hello world!"
     );
 
-    glfwShowWindow(info.window->window);
-
-    glfwMakeContextCurrent(info.window->window);
-
-    glfwSetWindowSizeCallback(info.window->window, OnResize);
+    vgeSetWindowSizeCallback(info.window, OnResize);
 
     vulkanContext *context = initVulkan(info.window);
 

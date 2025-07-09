@@ -5,6 +5,12 @@
 #ifndef VULKANDEFS_H
 #define VULKANDEFS_H
 
+#ifdef VGE_PLATFORM_WIN32
+#define VK_USE_PLATFORM_WIN32_KHR
+#elifdef VGE_PLATFORM_WAYLAND
+#define VK_USE_PLATFORM_WAYLAND_KHR
+#endif
+
 #include <vulkan/vulkan.h>
 #include "../../window/vgeWindow.h"
 #include "cglm/call/vec3.h"

@@ -5,19 +5,6 @@ set(CMAKE_C_STANDARD 23)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
-# Platform Detection ------------------------------------------------------------------------------
-
-if (WIN32)
-	add_compile_definitions(VGE_PLATFORM_WIN32)
-ELSEIF (LINUX)
-	message("WAYLAND!!!!!!!")
-	add_compile_definitions(VGE_PLATFORM_WAYLAND)
-ELSE ()
-
-ENDIF ()
-
-# -------------------------------------------------------------------------------------------------
-
 # Shaders Compile Section -------------------------------------------------------------------------
 
 file(GLOB_RECURSE SHADERS "shaders/*.frag" "shaders/*.vert" "shaders/*.geom" "shaders/*.comp")
@@ -46,15 +33,27 @@ add_custom_target(CompileShaders ALL DEPENDS ${SPIRV_OUTPUTS})
 
 # External Deps Section ---------------------------------------------------------------------------
 include(cmake/CPM.cmake)
+
+if (WIN32)
+	add_compile_definitions(VGE_OS_WINDOWS)
+	add_compile_definitions(VGE_PLATFORM_WIN32)
+ENDIF ()
+IF (LINUX)
+	add_compile_definitions(VGE_OS_WAYLAND)
+	add_compile_definitions(VGE_PLATFORM_WAYLAND)
+ENDIF ()
+IF (NOT WIN32 AND NOT LINUX)
+	CPMAddPackage(
+		NAME glfw
+		GITHUB_REPOSITORY glfw/glfw
+		GIT_TAG 3.4
+	)
+ENDIF ()
+
 CPMAddPackage(
 		NAME cglm
 		GITHUB_REPOSITORY recp/cglm
 		VERSION 0.9.6
-)
-CPMAddPackage(
-		NAME glfw
-		GITHUB_REPOSITORY glfw/glfw
-		GIT_TAG 3.4
 )
 CPMAddPackage(
 		NAME stb
@@ -64,6 +63,9 @@ CPMAddPackage(
 )
 add_library(stb INTERFACE)
 find_package(Vulkan REQUIRED)
+if (Vulkan_FOUND)
+	add_compile_definitions(VGE_GRAPHICS_VULKAN)
+endif ()
 # -------------------------------------------------------------------------------------------------
 
 # Add Deps Section --------------------------------------------------------------------------------
