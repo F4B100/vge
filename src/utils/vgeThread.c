@@ -11,15 +11,14 @@ uint32_t vgeThreadCreate(pVgeThread *thread, void *(*func)(void *), void *arg) {
 
 	if (!vgeThread) {
 		return 1;
-
 	}
-	vgeThread->hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) func, arg, 0, NULL);
+	vgeThread->hThread = CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE) func, arg, 0, nullptr);
 	*thread = vgeThread;
 
 	return 0;
 }
 
-uint64_t vgeThreadJoin(pVgeThread thread, void **retVal) {
+uint32_t vgeThreadJoin(pVgeThread thread, void **retVal) {
 	return WaitForSingleObject(thread->hThread, INFINITE);;
 }
 

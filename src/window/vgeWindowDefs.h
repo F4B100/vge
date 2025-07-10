@@ -6,13 +6,13 @@
 #define VGEWINDOWDEFS_H
 
 #include <stdint.h>
-#include "../utils/vgeThread.h"
 
 #ifdef VGE_PLATFORM_WIN32
 #define UNICODE
 #define _UNICODE
 #include <windows.h>
 #include <windowsx.h>
+#include "../utils/vgeThread.h"
 
 // window State
 #define WINDOW_NORMAL 0x00

@@ -78,6 +78,7 @@ pVgeWindow vgeWindowInit(const int32_t width, const int32_t height, const char *
 	ShowWindow(window->hWindow, 10);
 
 	window->state = WINDOW_NORMAL;
+	vgeThreadCreate();
 	return window;
 }
 
@@ -109,6 +110,21 @@ uint32_t vgeIsWindowClosed(pVgeWindow window) {
 
 void vgeHandleEvents() {
 
+}
+
+void *vgeWindowThread(void *data) {
+	pVgeWindow window = (pVgeWindow)data;
+
+	MSG message;
+
+	while(window->state != WINDOW_CLOSED) {
+		while (PeekMessage(&message, window->hWindow, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&message);
+			DispatchMessage(&message);
+		}
+	}
+
+	return window;
 }
 
 LRESULT CALLBACK vgeWindowsWProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
