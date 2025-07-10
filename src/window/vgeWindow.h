@@ -16,6 +16,13 @@ void vgeInit();
 
 vgeWindow *vgeWindowInit(int32_t width, int32_t height, const char *title);
 
+void vgeSetStartTime();
+double vgeGetTimeSinceStart();
+
+void vgeHandleEvents();
+
+uint32_t vgeIsWindowClosed(pVgeWindow window);
+
 #ifdef VGE_PLATFORM_WIN32
 LRESULT CALLBACK vgeWindowsWProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 #define WINDOW_PROCEDURE vgeWindowsWProc

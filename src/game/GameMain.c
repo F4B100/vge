@@ -3,6 +3,7 @@
 //
 
 #include <stdio.h>
+#include <math.h>
 #include "GameMain.h"
 
 gameInfo info;
@@ -72,9 +73,9 @@ void GameInit() {
     destroyVulkan(context);
 }
 void GameStart(gameInfo *info) {
-    double lastFrame = glfwGetTime();
-    while (!glfwWindowShouldClose(info->window->window)) {
-        const double currentFrame = glfwGetTime();
+    double lastFrame = vgeGetTimeSinceStart();
+    while (!vgeIsWindowClosed(info->window)) {
+        const double currentFrame = vgeGetTimeSinceStart();
         info->deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
@@ -86,17 +87,16 @@ void GameStart(gameInfo *info) {
 
         info->currentFrame = (info->currentFrame + 1) % info->graphics->swapChainImageCount;
 
-        glfwSwapBuffers(info->window->window);
-        glfwPollEvents();
+        vgeHandleEvents();
     }
 }
 void GameLoop(gameInfo *info) {
 
     VkClearValue clearColor = {
         .color = {
-            (float) cos( glfwGetTime()),
-            ((float) cos(glfwGetTime() * 2.0f) + 1.0f) / 2.0f,
-            ((float) sin(glfwGetTime() * 2.0f) + 1.0f) / 2.0f,
+            (float) cos(vgeGetTimeSinceStart()),
+            ((float) cos(vgeGetTimeSinceStart() * 2.0f) + 1.0f) / 2.0f,
+            ((float) sin(vgeGetTimeSinceStart() * 2.0f) + 1.0f) / 2.0f,
             1.0f
         }
     };

@@ -5,10 +5,9 @@
 #include "vgeWindow.h"
 
 #ifdef VGE_PLATFORM_WIN32
+#include <stdio.h>
 #include <string.h>
 #include <vulkan/vulkan_win32.h>
-
-#include "../../cmake-build-debug-event-trace/_deps/glfw-src/src/win32_platform.h"
 
 pVgeGlobalContext windowGlobalContext;
 
@@ -40,6 +39,8 @@ void vgeInit() {
 	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 
 	RegisterClassEx(&wc);
+
+	vgeSetStartTime();
 }
 
 pVgeWindow vgeWindowInit(const int32_t width, const int32_t height, const char *title) {
@@ -66,7 +67,7 @@ pVgeWindow vgeWindowInit(const int32_t width, const int32_t height, const char *
 		nullptr,
 		nullptr,
 		windowGlobalContext->hInstance,
-		NULL
+		window
 	);
 
 	if (window->hWindow == NULL) {
@@ -80,27 +81,100 @@ pVgeWindow vgeWindowInit(const int32_t width, const int32_t height, const char *
 	return window;
 }
 
-LRESULT CALLBACK vgeWindowsWProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+void vgeSetStartTime() {
+	LARGE_INTEGER frequency;
+	LARGE_INTEGER counter;
 
-return DefWindowProc(hwnd, uMsg, wParam, lParam);
+	QueryPerformanceFrequency(&frequency);
+	QueryPerformanceCounter(&counter);
+
+	windowGlobalContext->StartTime = (double)(counter.QuadPart * 1000000000 / frequency.QuadPart);
+}
+
+double vgeGetTimeSinceStart() {
+	LARGE_INTEGER frequency;
+	LARGE_INTEGER counter;
+
+	QueryPerformanceFrequency(&frequency);
+	QueryPerformanceCounter(&counter);
+
+	const double newTime = (double)(counter.QuadPart * 1000000000 / frequency.QuadPart);
+
+	return newTime - windowGlobalContext->StartTime;
+}
+
+uint32_t vgeIsWindowClosed(pVgeWindow window) {
+	return window->state == WINDOW_CLOSED;
+}
+
+void vgeHandleEvents() {
+
+}
+
+LRESULT CALLBACK vgeWindowsWProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	pVgeWindow window = nullptr;
+
+	if (uMsg == WM_NCCREATE) {
+		CREATESTRUCT* cs = (CREATESTRUCT*)lParam;
+		window = (pVgeWindow)cs->lpCreateParams;
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)window);
+	} else {
+		window = (pVgeWindow)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	}
+
+	switch (uMsg) {
+		case WM_MOUSEMOVE:
+			if (window->mouseMoveCallback != NULL)
+				window->mouseMoveCallback(window, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+			break;
+		case WM_LBUTTONDOWN:
+			if (window->mouseLeftDownCallback != NULL)
+				window->mouseLeftDownCallback(window, GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam));
+			break;
+		case WM_CLOSE:
+			DestroyWindow(hwnd);
+			window->state = WINDOW_CLOSED;
+			break;
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			break;
+		case WM_SIZING:
+			RECT *rect = (RECT *)lParam;
+			if (window->resizeCallback != NULL)
+				window->resizeCallback(window, rect->right - rect->left, rect->bottom - rect->top);
+		default:
+			return DefWindowProc(hwnd, uMsg, wParam, lParam);
+	}
+	return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
+void *vgeWindowThreadFunc(void *arg) {
+	pVgeWindow window = (pVgeWindow) arg;
+
+	MSG message;
+	while (PeekMessage(&message, window->hWindow, 0, 0, PM_REMOVE)) {
+		TranslateMessage(&message);
+		DispatchMessage(&message);
+	}
+
+	return nullptr;
 }
 
 void vgeGetWindowName(pVgeWindow window, char **name) {
-	uint32_t length = GetWindowTextLength(window->hWindow);
-	const LPWSTR str = malloc(sizeof(WCHAR) * (length + 1));
+	const int32_t length = GetWindowTextLength(window->hWindow);
+	LPWSTR str = malloc(sizeof(WCHAR) * (length + 1));
 	GetWindowText(window->hWindow, str, length + 1);
 
 
-
-	uint32_t size = WideCharToMultiByte(
+	const int32_t size = WideCharToMultiByte(
 		CP_ACP,
 		WC_NO_BEST_FIT_CHARS,
 		str,
 		-1,
-		NULL,
+		nullptr,
 		0,
-		NULL,
-		NULL
+		nullptr,
+		nullptr
 	);
 
 	*name = malloc(size);
@@ -112,8 +186,8 @@ void vgeGetWindowName(pVgeWindow window, char **name) {
 		-1,
 		*name,
 		size,
-		NULL,
-		NULL
+		nullptr,
+		nullptr
 	);
 	free(str);
 }
@@ -127,7 +201,7 @@ char *extensions[] = {
 	VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
 };
 
-char **vgeGetVulkanExtensions(uint32_t *numExtensions,uint32_t numExtra,char** extra) {
+char **vgeGetVulkanExtensions(uint32_t *numExtensions, uint32_t numExtra, char** extra) {
 	char **extensions = malloc(sizeof(char **) * (NUM_REQUIRED_VGE_EXTENSIONS + numExtra));
 
 	for (int i = 0; i < NUM_REQUIRED_VGE_EXTENSIONS; ++i) {
@@ -152,7 +226,7 @@ void vgeCreateVulkanWindowSurface(vgeWindow *window, VkInstance instance,VkSurfa
 	};
 
 	if (vkCreateWin32SurfaceKHR(instance, &info, nullptr, toCreate) != VK_SUCCESS) {
-
+		fprintf(stderr, "Failed to create window surface.\n");
 	}
 }
 
