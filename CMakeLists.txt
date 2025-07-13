@@ -6,6 +6,7 @@ set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
 # Shaders Compile Section -------------------------------------------------------------------------
+find_program(GLSLC glslc REQUIRED)
 
 file(GLOB_RECURSE SHADERS "shaders/*.frag" "shaders/*.vert" "shaders/*.geom" "shaders/*.comp")
 set(SPIRV_OUTPUTS "")
@@ -48,6 +49,7 @@ IF (NOT WIN32 AND NOT LINUX)
 		GITHUB_REPOSITORY glfw/glfw
 		GIT_TAG 3.4
 	)
+	target_link_libraries(vge PRIVATE glfw)
 ENDIF ()
 
 CPMAddPackage(
@@ -73,7 +75,7 @@ file(GLOB_RECURSE SRC_FILES "src/*.c" "src/*.h" "src/*.s")
 add_executable(vge main.c ${SRC_FILES})
 
 
-target_link_libraries(vge PRIVATE cglm m glfw stb Vulkan::Vulkan)
+target_link_libraries(vge PRIVATE cglm m stb Vulkan::Vulkan)
 target_include_directories(stb INTERFACE ${stb_SOURCE_DIR} ${cglm_SORCE_DIR} ${glfw_INCLUDE_DIR})
 add_dependencies(vge CompileShaders)
 # -------------------------------------------------------------------------------------------------

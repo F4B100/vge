@@ -23,18 +23,6 @@
 #define SPIRV_MAGIC_CONSTANT 0x07230203
 #define SHADER_FILE_MAX_SIZE 8192u
 
-typedef struct Vertex_3D {
-    vec3 pos;
-    vec3 color;
-    vec2 texCoords;
-} vertex3D;
-
-typedef struct Vertex_2D {
-    vec2 pos;
-    vec3 color;
-    vec2 texCoords;
-} vertex2D;
-
 typedef struct VulkanContext {
     VkInstance instance;
     VkPhysicalDevice physicalDevice;

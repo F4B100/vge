@@ -92,7 +92,7 @@ VkExtent2D chooseSwapExtent(swapChainSupportDetails *supportDetails, vgeWindow *
         return capabilities->currentExtent;
     }
     uint32_t windowX, windowY;
-    glfwGetWindowSize(window->window, &windowX, &windowY);
+    vgeGetContentSize(window, &windowX, &windowY);
 
     VkExtent2D actualExtent = {
         .width = clamp(windowX, capabilities->minImageExtent.width, capabilities->maxImageExtent.width),
@@ -199,7 +199,8 @@ void createFramebuffers(uint32_t imageCount, VkImageView *imageViews, VkDevice d
 }
 
 void cleanupSwapChain(VkFramebuffer *frameBuffers, VkImageView *imageViews, VkImage *swapChainImages, VkSwapchainKHR swapChain, uint32_t swapChainImageCount, VkDevice device) {
-    for (size_t i = 0; i < swapChainImageCount; i++) {
+	vkDeviceWaitIdle(device);
+	for (size_t i = 0; i < swapChainImageCount; i++) {
         vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
     }
     free(frameBuffers);

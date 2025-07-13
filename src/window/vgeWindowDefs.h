@@ -19,22 +19,46 @@
 #define WINDOW_CLOSED 0x10
 
 // event Defs
+typedef struct VgeMouseMoveInfo {
+	uint32_t x;
+	uint32_t y;
+} vgeMouseMoveInfo, *pVgeMouseMoveInfo;
 #define WINDOW_MOUSE_MOVE 0x00000001
+typedef struct VgeMouseClickLeftInfo {
+	uint32_t x;
+	uint32_t y;
+} vgeMouseClickLeftInfo, *pVgeMouseClickLeftInfo;
 #define WINDOW_MOUSE_CLICK_LEFT 0x00000002
 
+typedef struct VgeWindowResizeInfo {
+	uint32_t x;
+	uint32_t y;
+} vgeWindowResizeInfo, *pVgeWindowResizeInfo;
 #define WINDOW_RESIZE 0x00000011
 typedef uint32_t vgeEventID;
 
+typedef struct VgeWindow_t {
+	HWND hWindow;
+	uint32_t state;
+	vgeThread thread;
+	void (*mouseMoveCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
+	void (*mouseLeftDownCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
+	void (*resizeCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
+} vgeWindow, *pVgeWindow;
 
 typedef struct VgeEventInfo {
 	vgeEventID eventId;
+	pVgeWindow window;
 	void *data;
 } vgeEventInfo, *pVgeEventInfo;
 
+#define MAX_EVENTS 10000
+
 typedef struct VgeSharedEventList {
 	vgeMutex mutex;
-	uint64_t count;
-	pVgeEventInfo events;
+	vgeCond isFull;
+	uint64_t numEvents;
+	vgeEventInfo events[MAX_EVENTS];
 } vgeSharedEventList, *pVgeSharedEventList;
 
 typedef struct VgeGlobalContext_t {
@@ -45,15 +69,6 @@ typedef struct VgeGlobalContext_t {
 
 	vgeSharedEventList windowEvents;
 } vgeGlobalContext, *pVgeGlobalContext;
-
-typedef struct VgeWindow_t {
-    HWND hWindow;
-    uint32_t state;
-    void (*mouseMoveCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
-    void (*mouseLeftDownCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
-    void (*resizeCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
-} vgeWindow, *pVgeWindow;
-
 
 #elifdef VGE_PLATFORM_WAYLAND
 #include <GLFW/glfw3.h>

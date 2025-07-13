@@ -41,19 +41,58 @@ void vgeInit() {
 	RegisterClassEx(&wc);
 
 	vgeSetStartTime();
+
+	vgeMutexInit(&windowGlobalContext->windowEvents.mutex);
+	windowGlobalContext->windowEvents.numEvents = 0;
 }
 
-pVgeWindow vgeWindowInit(const int32_t width, const int32_t height, const char *title) {
+typedef struct VgeWindowThreadCreateInfo {
+	vgeMutex mutex;
+	vgeCond cond;
+	uint32_t width;
+	uint32_t height;
+	char *windowName;
+	pVgeWindow window;
+} vgeWindowThreadCreateInfo, *pVgeWindowThreadCreateInfo;
+
+pVgeWindow vgeWindowInit(int32_t width, int32_t height, char *title) {
 	pVgeWindow window = malloc(sizeof(vgeWindow));
+
+	pVgeWindowThreadCreateInfo info = malloc(sizeof(struct VgeWindowThreadCreateInfo));
+
+	info->window = window;
+	info->width = width;
+	info->height = height;
+	info->windowName = title;
+
+	vgeCondInit(&info->cond);
+	vgeMutexInit(&info->mutex);
+	vgeMutexLock(&info->mutex);
+
+	vgeThreadCreate(&window->thread, vgeWindowThreadFunc, info);
+
+	vgeCondWait(&info->cond, &info->mutex);
+	free(info);
+	return window;
+}
+
+void *vgeWindowThreadFunc(void *arg) {
+	pVgeWindowThreadCreateInfo info = (pVgeWindowThreadCreateInfo)arg;
+
+	vgeMutexLock(&info->mutex);
+
+	pVgeWindow window = info->window;
+
 	window->mouseLeftDownCallback = nullptr;
 	window->mouseMoveCallback = nullptr;
 	window->state = WINDOW_CLOSED;
 
-	const uint32_t nameLen = strlen(title);
-	wchar_t windowName[nameLen];
+	const uint32_t nameLen = strlen(info->windowName);
+	wchar_t windowName[nameLen + 1];
 	for (int i = 0; i < nameLen; ++i) {
-		windowName[i] = (wchar_t)title[i];
+		windowName[i] = (wchar_t)info->windowName[i];
 	}
+	windowName[nameLen] = L'\0';
 
 	window->hWindow = CreateWindowEx(
 		0,
@@ -62,7 +101,7 @@ pVgeWindow vgeWindowInit(const int32_t width, const int32_t height, const char *
 		WS_OVERLAPPEDWINDOW,
 
 		0, 0,
-		width, height,
+		info->width, info->height,
 
 		nullptr,
 		nullptr,
@@ -78,8 +117,22 @@ pVgeWindow vgeWindowInit(const int32_t width, const int32_t height, const char *
 	ShowWindow(window->hWindow, 10);
 
 	window->state = WINDOW_NORMAL;
-	vgeThreadCreate();
-	return window;
+
+	MSG message;
+
+	vgeCondSignal(&info->cond);
+	vgeMutexUnlock(&info->mutex);
+
+	/*
+	 * WARNING: after this point info will be freed by the calling thread, and it should not be used anymore
+	 */
+
+	while (window->state != WINDOW_CLOSED) {
+		GetMessage(&message, window->hWindow, 0, 0);
+		TranslateMessage(&message);
+		DispatchMessage(&message);
+	}
+	return nullptr;
 }
 
 void vgeSetStartTime() {
@@ -89,7 +142,7 @@ void vgeSetStartTime() {
 	QueryPerformanceFrequency(&frequency);
 	QueryPerformanceCounter(&counter);
 
-	windowGlobalContext->StartTime = (double)(counter.QuadPart * 1000000000 / frequency.QuadPart);
+	windowGlobalContext->StartTime = (double)counter.QuadPart / frequency.QuadPart;
 }
 
 double vgeGetTimeSinceStart() {
@@ -99,7 +152,7 @@ double vgeGetTimeSinceStart() {
 	QueryPerformanceFrequency(&frequency);
 	QueryPerformanceCounter(&counter);
 
-	const double newTime = (double)(counter.QuadPart * 1000000000 / frequency.QuadPart);
+	const double newTime = (double)counter.QuadPart / frequency.QuadPart;
 
 	return newTime - windowGlobalContext->StartTime;
 }
@@ -109,26 +162,54 @@ uint32_t vgeIsWindowClosed(pVgeWindow window) {
 }
 
 void vgeHandleEvents() {
-
-}
-
-void *vgeWindowThread(void *data) {
-	pVgeWindow window = (pVgeWindow)data;
-
-	MSG message;
-
-	while(window->state != WINDOW_CLOSED) {
-		while (PeekMessage(&message, window->hWindow, 0, 0, PM_REMOVE)) {
-			TranslateMessage(&message);
-			DispatchMessage(&message);
+	vgeMutexLock(&windowGlobalContext->windowEvents.mutex);
+	for (int i = 0; i < windowGlobalContext->windowEvents.numEvents; ++i) {
+		vgeEventInfo info = windowGlobalContext->windowEvents.events[i];
+		switch (info.eventId) {
+			case WINDOW_MOUSE_MOVE:
+				pVgeMouseMoveInfo infoEventMouseMove = info.data;
+				if (info.window->mouseMoveCallback != nullptr) {
+					info.window->mouseMoveCallback(info.window ,infoEventMouseMove->x, infoEventMouseMove->y);
+				}
+				free(infoEventMouseMove);
+				break;
+			case WINDOW_MOUSE_CLICK_LEFT:
+				pVgeMouseClickLeftInfo infoEventClickLeft = info.data;
+				if (info.window->mouseLeftDownCallback != nullptr) {
+					info.window->mouseLeftDownCallback(info.window ,infoEventClickLeft->x, infoEventClickLeft->y);
+				}
+				free(infoEventClickLeft);
+				break;
+			case WINDOW_RESIZE:
+				pVgeWindowResizeInfo infoEventWindowResize = info.data;
+				if (info.window->resizeCallback != nullptr) {
+					info.window->resizeCallback(info.window ,infoEventWindowResize->x, infoEventWindowResize->y);
+				}
+				free(infoEventWindowResize);
+				break;
+			default:
+				break;
 		}
 	}
 
-	return window;
+	windowGlobalContext->windowEvents.numEvents = 0;
+	vgeCondSignal(&windowGlobalContext->windowEvents.isFull);
+	vgeMutexUnlock(&windowGlobalContext->windowEvents.mutex);
+}
+
+void vgeGetContentSize(pVgeWindow window, uint32_t *width, uint32_t *height) {
+	RECT dim;
+	if (GetClientRect(window->hWindow, &dim) == 0) {
+		*width = -1;
+		*height = -1;
+		return;
+	}
+	*width = dim.right - dim.left;
+	*height = dim.bottom - dim.top;
 }
 
 LRESULT CALLBACK vgeWindowsWProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	pVgeWindow window = nullptr;
+	pVgeWindow window;
 
 	if (uMsg == WM_NCCREATE) {
 		CREATESTRUCT* cs = (CREATESTRUCT*)lParam;
@@ -138,14 +219,53 @@ LRESULT CALLBACK vgeWindowsWProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		window = (pVgeWindow)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	}
 
+	uint64_t eventNum;
+	pVgeEventInfo event;
+	pVgeMouseMoveInfo eventData;
 	switch (uMsg) {
 		case WM_MOUSEMOVE:
-			if (window->mouseMoveCallback != NULL)
-				window->mouseMoveCallback(window, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+			vgeMutexLock(&windowGlobalContext->windowEvents.mutex);
+
+			if (windowGlobalContext->windowEvents.numEvents == MAX_EVENTS) {
+				vgeCondWait(&windowGlobalContext->windowEvents.isFull, &windowGlobalContext->windowEvents.mutex);
+			}
+
+			eventNum = windowGlobalContext->windowEvents.numEvents;
+			windowGlobalContext->windowEvents.numEvents++;
+
+			event = &windowGlobalContext->windowEvents.events[eventNum];
+			event->window = window;
+			event->eventId = WINDOW_MOUSE_MOVE;
+
+			eventData = malloc(sizeof(vgeMouseMoveInfo));
+			eventData->x = GET_X_LPARAM(lParam);
+			eventData->y = GET_Y_LPARAM(lParam);
+
+			event->data = eventData;
+
+			vgeMutexUnlock(&windowGlobalContext->windowEvents.mutex);
 			break;
 		case WM_LBUTTONDOWN:
-			if (window->mouseLeftDownCallback != NULL)
-				window->mouseLeftDownCallback(window, GET_X_LPARAM(lParam),GET_Y_LPARAM(lParam));
+			vgeMutexLock(&windowGlobalContext->windowEvents.mutex);
+
+			if (windowGlobalContext->windowEvents.numEvents == MAX_EVENTS) {
+				vgeCondWait(&windowGlobalContext->windowEvents.isFull, &windowGlobalContext->windowEvents.mutex);
+			}
+
+			eventNum = windowGlobalContext->windowEvents.numEvents;
+			windowGlobalContext->windowEvents.numEvents++;
+
+			event = &windowGlobalContext->windowEvents.events[eventNum];
+			event->window = window;
+			event->eventId = WINDOW_MOUSE_CLICK_LEFT;
+
+			eventData = malloc(sizeof(vgeMouseMoveInfo));
+			eventData->x = GET_X_LPARAM(lParam);
+			eventData->y = GET_Y_LPARAM(lParam);
+
+			event->data = eventData;
+
+			vgeMutexUnlock(&windowGlobalContext->windowEvents.mutex);
 			break;
 		case WM_CLOSE:
 			DestroyWindow(hwnd);
@@ -155,34 +275,45 @@ LRESULT CALLBACK vgeWindowsWProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 			PostQuitMessage(0);
 			break;
 		case WM_SIZING:
-			RECT *rect = (RECT *)lParam;
-			if (window->resizeCallback != NULL)
-				window->resizeCallback(window, rect->right - rect->left, rect->bottom - rect->top);
+			vgeMutexLock(&windowGlobalContext->windowEvents.mutex);
+
+			if (windowGlobalContext->windowEvents.numEvents == MAX_EVENTS) {
+				vgeCondWait(&windowGlobalContext->windowEvents.isFull, &windowGlobalContext->windowEvents.mutex);
+			}
+
+			eventNum = windowGlobalContext->windowEvents.numEvents;
+
+			RECT *sizingRect = (RECT *)lParam;
+
+			event = &windowGlobalContext->windowEvents.events[eventNum];
+			event->window = window;
+			event->eventId = WINDOW_RESIZE;
+
+			eventData = malloc(sizeof(vgeMouseMoveInfo));
+			eventData->x = sizingRect->right - sizingRect->left;
+			eventData->y = sizingRect->bottom - sizingRect->top;
+
+			event->data = eventData;
+
+			windowGlobalContext->windowEvents.numEvents++;
+
+			vgeMutexUnlock(&windowGlobalContext->windowEvents.mutex);
+			break;
 		default:
 			return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-void *vgeWindowThreadFunc(void *arg) {
-	pVgeWindow window = (pVgeWindow) arg;
-
-	MSG message;
-	while (PeekMessage(&message, window->hWindow, 0, 0, PM_REMOVE)) {
-		TranslateMessage(&message);
-		DispatchMessage(&message);
-	}
-
-	return nullptr;
-}
-
 void vgeGetWindowName(pVgeWindow window, char **name) {
-	const int32_t length = GetWindowTextLength(window->hWindow);
+	if (!IsWindow(window->hWindow))
+		return;
+	int32_t length = GetWindowTextLength(window->hWindow);
 	LPWSTR str = malloc(sizeof(WCHAR) * (length + 1));
 	GetWindowText(window->hWindow, str, length + 1);
 
 
-	const int32_t size = WideCharToMultiByte(
+	int32_t size = WideCharToMultiByte(
 		CP_ACP,
 		WC_NO_BEST_FIT_CHARS,
 		str,
@@ -211,25 +342,25 @@ void vgeGetWindowName(pVgeWindow window, char **name) {
 #ifdef VGE_GRAPHICS_VULKAN
 
 #define NUM_REQUIRED_VGE_EXTENSIONS 3
-char *extensions[] = {
+char *vgeExtensions[] = {
 	VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
 	VK_KHR_SURFACE_EXTENSION_NAME,
 	VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
 };
 
-char **vgeGetVulkanExtensions(uint32_t *numExtensions, uint32_t numExtra, char** extra) {
+const char **vgeGetVulkanExtensions(uint32_t *numExtensions, uint32_t numExtra, const char** extra) {
 	char **extensions = malloc(sizeof(char **) * (NUM_REQUIRED_VGE_EXTENSIONS + numExtra));
 
 	for (int i = 0; i < NUM_REQUIRED_VGE_EXTENSIONS; ++i) {
-		extensions[i] = malloc(sizeof(char) * strlen(extensions[i]));
-		strcpy(extensions[i], extensions[i]);
+		extensions[i] = malloc(sizeof(char) * strlen(vgeExtensions[i]));
+		strcpy(extensions[i], vgeExtensions[i]);
 	}
 	for (int i = 0; i < numExtra; ++i) {
 		extensions[NUM_REQUIRED_VGE_EXTENSIONS + i] = malloc(sizeof(char) * strlen(extra[i]));
 		strcpy(extensions[NUM_REQUIRED_VGE_EXTENSIONS + i], extra[i]);
 	}
 	*numExtensions = NUM_REQUIRED_VGE_EXTENSIONS + numExtra;
-	return extensions;
+	return (const char **)extensions;
 }
 
 void vgeCreateVulkanWindowSurface(vgeWindow *window, VkInstance instance,VkSurfaceKHR *toCreate) {
@@ -244,6 +375,12 @@ void vgeCreateVulkanWindowSurface(vgeWindow *window, VkInstance instance,VkSurfa
 	if (vkCreateWin32SurfaceKHR(instance, &info, nullptr, toCreate) != VK_SUCCESS) {
 		fprintf(stderr, "Failed to create window surface.\n");
 	}
+}
+
+uint8_t physicalDeviceSupportsPresentation(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex) {
+	const VkBool32 presentSupport = vkGetPhysicalDeviceWin32PresentationSupportKHR(physicalDevice, queueFamilyIndex);
+
+	return presentSupport == VK_TRUE;
 }
 
 #endif
@@ -285,6 +422,6 @@ return window;
 #endif
 
 // Callbacks are inherently platform-agnostic so no ifdef's are needed
-void vgeSetWindowSizeCallback(pVgeWindow window, void *(*func)(pVgeWindow window, uint32_t width, uint32_t height)) {
-window->resizeCallback = (void(*)(struct VgeWindow_t*, uint32_t, uint32_t))func;
+void vgeSetWindowSizeCallback(pVgeWindow window, void (*func)(pVgeWindow window, uint32_t width, uint32_t height)) {
+	window->resizeCallback = (void(*)(struct VgeWindow_t*, uint32_t, uint32_t))func;
 }

@@ -5,6 +5,7 @@
 #include "vulkanPhysicalDevice.h"
 #include "vulkanQueues.h"
 #include "vulkanSwapChain.h"
+#include "../../window/vgeWindow.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -12,13 +13,12 @@ char *deviceExtensions[] = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
-
 uint8_t isPhysicalDeviceSuitable(vulkanContext *context, VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties *physicalDeviceProperties) {
     queueFamilyIndices* queues = searchQueueFamilies(physicalDevice, context->surface);
 
     uint8_t isSuitable = isQueueFamiliesComplete(queues);
 
-    isSuitable &= glfwGetPhysicalDevicePresentationSupport(context->instance, physicalDevice, queues->queueInfoArr[0].queueFamilyIndex);
+    isSuitable &= physicalDeviceSupportsPresentation(physicalDevice, queues->queueInfoArr[0].queueFamilyIndex);
 
     isSuitable &= checkDeviceExtensionSupport(physicalDevice);
 

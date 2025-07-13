@@ -82,47 +82,21 @@ void createVulkanInstance(const char *windowName, VkInstance *toCreate) {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pApplicationInfo = &appInfo,
         .enabledLayerCount = 0,
-        .ppEnabledLayerNames = NULL
+        .ppEnabledLayerNames = nullptr
     };
-
-    uint32_t glfwExtensionCount = 0;
-    const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};
 
     uint32_t extensionCount;
     const char **extensionNames;
 
-    if (enableValidationLayers) {
-        extensionCount = glfwExtensionCount + VALIDATION_EXTENSIONS_COUNT;
-        extensionNames = calloc(extensionCount, sizeof(char **));
-
-        for (uint32_t i = 0; i < glfwExtensionCount; i++) {
-            extensionNames[i] = glfwExtensions[i];
-        }
-
-        for (uint32_t i = glfwExtensionCount; i < extensionCount; i++) {
-            extensionNames[i] = validationExtensions[i - glfwExtensionCount];
-        }
-
-        for (uint32_t i = 0; i < extensionCount; i++) {
-            printf("%s\n", extensionNames[i]);
-        }
-
-        populateDebugMessengerCreateInfo(&debugCreateInfo);
-        createInfo.pNext = &debugCreateInfo;
-        createInfo.enabledLayerCount = VALIDATION_LAYERS_COUNT;
-        createInfo.ppEnabledLayerNames = validationLayers;
-    } else {
-        extensionCount = glfwExtensionCount;
-        extensionNames = calloc(extensionCount, sizeof(char **));
-        for (uint32_t i = 0; i < glfwExtensionCount; i++) {
-            extensionNames[i] = glfwExtensions[i];
-        }
-        for (uint32_t i = 0; i < extensionCount; i++) {
-            printf("%s\n", extensionNames[i]);
-        }
-    }
+	if (enableValidationLayers) {
+		extensionNames = vgeGetVulkanExtensions(&extensionCount, VALIDATION_EXTENSIONS_COUNT, validationExtensions);
+		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};
+		populateDebugMessengerCreateInfo(&debugCreateInfo);
+		createInfo.pNext = &debugCreateInfo;
+	} else {
+		extensionNames = vgeGetVulkanExtensions(&extensionCount, 0, nullptr);
+		createInfo.pNext = nullptr;
+	}
 
     createInfo.enabledExtensionCount = extensionCount;
     createInfo.ppEnabledExtensionNames = extensionNames;

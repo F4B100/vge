@@ -1,7 +1,7 @@
 //
 // Created by fabio on 20-06-2025.
 //
-
+#ifdef VGE_GRAPHICS_VULKAN
 #include "vulkanCommands.h"
 
 #include "vulkanQueues.h"
@@ -35,3 +35,36 @@ VkCommandBuffer *createCommandBuffer(uint32_t numBuffers, VkCommandPool commandP
     }
     return buffers;
 }
+
+VkCommandBuffer beginSingleTimeCommand(vulkanContext *context) {
+	VkCommandBufferAllocateInfo allocInfo = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+											 .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+											 .commandPool = context->commandPool,
+											 .commandBufferCount = 1};
+
+	VkCommandBuffer commandBuffer;
+	vkAllocateCommandBuffers(context->device, &allocInfo, &commandBuffer);
+
+	VkCommandBufferBeginInfo beginInfo = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+										  .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT};
+
+	vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+	return commandBuffer;
+}
+
+void endSingleTimeCommand(vulkanContext *context, VkCommandBuffer commandBuffer, VkQueue queue) {
+	vkEndCommandBuffer(commandBuffer);
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+
+	vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(queue);
+
+	vkFreeCommandBuffers(context->device, context->commandPool, 1, &commandBuffer);
+}
+
+#endif

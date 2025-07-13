@@ -14,6 +14,7 @@ typedef struct VgeThread_t {
 } vgeThread, *pVgeThread;
 
 typedef CRITICAL_SECTION vgeMutex, *pVgeMutex;
+typedef CONDITION_VARIABLE vgeCond, *pVgeCond;
 #elifdef VGE_PLATFORM_WAYLAND
 
 #else
@@ -22,13 +23,19 @@ typedef CRITICAL_SECTION vgeMutex, *pVgeMutex;
 
 // Thread funcs
 uint32_t vgeThreadCreate(pVgeThread thread, void *(*func)(void *), void *arg);
-uint32_t vgeThreadJoin(pVgeThread thread, void **retVal);
+void vgeThreadJoin(pVgeThread thread, void **retVal);
 
 // mutexes "Work more like linux"
-uint32_t cross_mutex_init(pVgeMutex mutex);
-uint32_t cross_mutex_lock(pVgeMutex mutex);
-uint32_t cross_mutex_unlock(pVgeMutex mutex);
-uint32_t cross_mutex_destroy(pVgeMutex mutex);
+uint32_t vgeMutexInit(pVgeMutex mutex);
+uint32_t vgeMutexLock(pVgeMutex mutex);
+uint32_t vgeMutexUnlock(pVgeMutex mutex);
+uint32_t vgeMutexDestroy(pVgeMutex mutex);
+
+// conditionals "same as above"
+uint32_t vgeCondInit(pVgeCond cond);
+void vgeCondWait(pVgeCond cond, pVgeMutex mutex);
+void vgeCondSignal(pVgeCond cond);
+uint32_t vgeCondDestroy(pVgeCond cond);
 
 // *future* Process funcs
 

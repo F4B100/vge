@@ -27,5 +27,6 @@ typedef struct GameInfo {
 void GameInit();
 void GameStart(gameInfo *info);
 void GameLoop(gameInfo *info);
+void GameEnd(gameInfo *info);
 
 #endif //GAMEMAIN_H

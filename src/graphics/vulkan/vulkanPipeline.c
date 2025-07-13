@@ -157,18 +157,18 @@ void createDescriptorPool(VkDevice device, VkDescriptorPool *toCreate) {
     }
 }
 
-VkVertexInputBindingDescription *getBindingDescription2D() {
+VkVertexInputBindingDescription *getBindingDescription2D(uint32_t stride) {
     VkVertexInputBindingDescription *bindingDescription = malloc(sizeof(VkVertexInputBindingDescription));
     bindingDescription->binding = 0;
-    bindingDescription->stride = sizeof(vertex2D);
+    bindingDescription->stride = stride;
     bindingDescription->inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
     return bindingDescription;
 }
-VkVertexInputBindingDescription *getBindingDescription3D() {
+VkVertexInputBindingDescription *getBindingDescription3D(uint32_t stride) {
     VkVertexInputBindingDescription *bindingDescription = malloc(sizeof(VkVertexInputBindingDescription));
     bindingDescription->binding = 0;
-    bindingDescription->stride = sizeof(vertex3D);
+    bindingDescription->stride = stride;
     bindingDescription->inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
     return bindingDescription;
 }
@@ -248,7 +248,7 @@ VgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info)
         fragShaderStageInfo
     };
 
-    VkVertexInputBindingDescription *bindingDescriptor = getBindingDescription2D();
+    VkVertexInputBindingDescription *bindingDescriptor = getBindingDescription2D(16);
 
     VkVertexInputAttributeDescription *attributeDescriptor = getAttributeDescription2D();
 

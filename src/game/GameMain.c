@@ -8,12 +8,10 @@
 
 gameInfo info;
 
-void OnResize(pVgeWindow window, int width, int height) {
-    printf("resized x:%d y:%d\n", width, height);
+void OnResize(pVgeWindow window, uint32_t width, uint32_t height) {
     if (width == 0 || height == 0) {
         return;
     }
-    vkDeviceWaitIdle(info.graphics->device);
     cleanupSwapChain(info.graphics->frameBuffers, info.graphics->swapChainImageViews, info.graphics->swapChainImages,
         info.graphics->swapchain, info.graphics->swapChainImageCount, info.graphics->device);
     createFullSwapChain(info.graphics->renderPass,
@@ -34,10 +32,10 @@ void OnResize(pVgeWindow window, int width, int height) {
 void GameInit() {
     vgeInit();
 
-    info.window = vgeWindowInit(
-        600, 800,
-        "hello world!"
-    );
+	info.window = vgeWindowInit(
+		1280, 720,
+		"Vge Window"
+	);
 
     vgeSetWindowSizeCallback(info.window, OnResize);
 
@@ -87,7 +85,7 @@ void GameStart(gameInfo *info) {
 
         info->currentFrame = (info->currentFrame + 1) % info->graphics->swapChainImageCount;
 
-        vgeHandleEvents();
+    	vgeHandleEvents();
     }
 }
 void GameLoop(gameInfo *info) {

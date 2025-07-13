@@ -30,10 +30,9 @@ vulkanContext *initVulkan(vgeWindow *window) {
         &context->instance
     );
 
-    glfwCreateWindowSurface(
+    vgeCreateVulkanWindowSurface(
+        window,
         context->instance,
-        window->window,
-        nullptr,
         &context->surface
     );
 

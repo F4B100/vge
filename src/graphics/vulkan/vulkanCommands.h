@@ -1,13 +1,17 @@
 //
 // Created by fabio on 20-06-2025.
 //
-
 #ifndef VULKANCOMMANDS_H
 #define VULKANCOMMANDS_H
-
+#ifdef VGE_GRAPHICS_VULKAN
 #include "vulkanDefs.h"
 
 void createCommandPool(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkDevice device, uint32_t queueFamilyIndex, VkCommandPool *toCreate);
 VkCommandBuffer *createCommandBuffer(uint32_t numBuffers, VkCommandPool commandPool, VkDevice device);
 
+VkCommandBuffer beginSingleTimeCommand(vulkanContext *context);
+
+void endSingleTimeCommand(vulkanContext *context, VkCommandBuffer commandBuffer, VkQueue queue);
+
+#endif //VGE_GRAPHICS_VULKAN
 #endif //VULKANCOMMANDS_H
