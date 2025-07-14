@@ -39,7 +39,7 @@ void GameInit() {
 
     vgeSetWindowSizeCallback(info.window, OnResize);
 
-    vulkanContext *context = initVulkan(info.window);
+    pVulkanContext context = initVulkan(info.window);
 
     info.graphics = context;
 

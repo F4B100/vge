@@ -6,8 +6,8 @@
 #define VULKANPHYSICALDEVICE_H
 #include "vulkanDefs.h"
 
-void choosePhysicalDevice(vulkanContext *context);
-uint8_t isPhysicalDeviceSuitable(vulkanContext *context, VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties *physicalDeviceProperties);
+void choosePhysicalDevice(pVulkanContext context);
+uint8_t isPhysicalDeviceSuitable(pVulkanContext context, VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties *physicalDeviceProperties);
 uint8_t checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice);
 
 #endif //VULKANPHYSICALDEVICE_H

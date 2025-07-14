@@ -13,7 +13,7 @@ char *deviceExtensions[] = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
-uint8_t isPhysicalDeviceSuitable(vulkanContext *context, VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties *physicalDeviceProperties) {
+uint8_t isPhysicalDeviceSuitable(pVulkanContext context, VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties *physicalDeviceProperties) {
     queueFamilyIndices* queues = searchQueueFamilies(physicalDevice, context->surface);
 
     uint8_t isSuitable = isQueueFamiliesComplete(queues);
@@ -61,7 +61,7 @@ uint8_t checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice) {
     return result;
 }
 
-void choosePhysicalDevice(vulkanContext *context) {
+void choosePhysicalDevice(pVulkanContext context) {
     uint32_t physicalDevicesCount = 0;
     vkEnumeratePhysicalDevices(context->instance, &physicalDevicesCount, nullptr);
 

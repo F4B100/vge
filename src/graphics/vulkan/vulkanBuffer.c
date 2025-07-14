@@ -3,3 +3,101 @@
 //
 
 #include "vulkanBuffer.h"
+
+pVulkanBuffer initBuffer(vulkanContext *context, uint64_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
+	pVulkanBuffer buffer = malloc(sizeof(vulkanBuffer));
+
+	buffer->size = size;
+
+    VkBufferCreateInfo bufferInfo = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .size = size,
+        .usage = usage,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE
+    };
+
+    if (vkCreateBuffer(context->device, &bufferInfo, nullptr, &buffer->buffer) != VK_SUCCESS) {
+        printf("failed to create buffer!");
+    	free(buffer);
+    	return nullptr;
+    }
+
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(context->device, buffer->buffer, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo = {
+        .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+        .allocationSize = memRequirements.size,
+        .memoryTypeIndex = findMemoryType(context, memRequirements.memoryTypeBits, properties)
+    };
+
+    if (vkAllocateMemory(context->device, &allocInfo, nullptr, &buffer->bufferMemory) != VK_SUCCESS) {
+        printf("failed to allocate buffer memory!");
+    	vkDestroyBuffer(context->device, buffer->buffer, nullptr);
+    	free(buffer);
+    	return nullptr;
+    }
+
+    vkBindBufferMemory(context->device, buffer->buffer, buffer->bufferMemory, 0);
+	return buffer;
+}
+
+void copyBuffer(vulkanContext *context, pVulkanBuffer src, pVulkanBuffer dst) {
+    VkCommandBuffer commandBuffer = beginSingleTimeCommand(context);
+
+    VkBufferCopy copyRegion = {
+        .srcOffset = 0,
+        .dstOffset = 0,
+        .size = src->size
+    };
+
+    vkCmdCopyBuffer(commandBuffer, src->buffer, dst->buffer, 1, &copyRegion);
+
+    endSingleTimeCommand(context, commandBuffer, context->queues[0]);
+}
+
+uint32_t findMemoryType(vulkanContext *context, uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+	VkPhysicalDeviceMemoryProperties memProperties;
+	vkGetPhysicalDeviceMemoryProperties(context->physicalDevice, &memProperties);
+
+	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+		if (typeFilter & (1 << i) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+			return i;
+		}
+	}
+
+	printf("failed to find suitable memory type!\n");
+	return -1;
+}
+
+void destroyBuffer(pVulkanContext context, pVulkanBuffer buffer) {
+	vkDestroyBuffer(context->device, buffer->buffer, nullptr);
+	vkFreeMemory(context->device, buffer->bufferMemory, nullptr);
+	free(buffer);
+}
+
+pVulkanBuffer createVulkanBuffer(vulkanContext *context, uint32_t numIndexes, uint32_t sizeIndex, void * data, VkBufferUsageFlags usage) {
+    pVulkanBuffer stagingBuffer = initBuffer(
+    	context,
+		sizeIndex * numIndexes,
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+		);
+
+    void* deviceData;
+    vkMapMemory(context->device, stagingBuffer->bufferMemory, 0, stagingBuffer->size, 0, &deviceData);
+    memcpy(deviceData, data, stagingBuffer->size);
+    vkUnmapMemory(context->device, stagingBuffer->bufferMemory);
+
+	pVulkanBuffer buffer = initBuffer(
+		context,
+		sizeIndex * numIndexes,
+		VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+		);
+
+    copyBuffer(context, stagingBuffer, buffer);
+
+    destroyBuffer(context, stagingBuffer);
+	return buffer;
+}

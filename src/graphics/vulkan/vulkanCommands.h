@@ -9,9 +9,9 @@
 void createCommandPool(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkDevice device, uint32_t queueFamilyIndex, VkCommandPool *toCreate);
 VkCommandBuffer *createCommandBuffer(uint32_t numBuffers, VkCommandPool commandPool, VkDevice device);
 
-VkCommandBuffer beginSingleTimeCommand(vulkanContext *context);
+VkCommandBuffer beginSingleTimeCommand(pVulkanContext context);
 
-void endSingleTimeCommand(vulkanContext *context, VkCommandBuffer commandBuffer, VkQueue queue);
+void endSingleTimeCommand(pVulkanContext context, VkCommandBuffer commandBuffer, VkQueue queue);
 
 #endif //VGE_GRAPHICS_VULKAN
 #endif //VULKANCOMMANDS_H

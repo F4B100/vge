@@ -13,8 +13,8 @@
 #include "vulkanSwapChain.h"
 #include "vulkanQueues.h"
 
-vulkanContext *initVulkan(vgeWindow *window) {
-    vulkanContext * context = calloc(sizeof(vulkanContext), 1);
+pVulkanContext initVulkan(vgeWindow *window) {
+    pVulkanContext context = calloc(sizeof(vulkanContext), 1);
     if (!context) {
         return nullptr;
     }
@@ -105,7 +105,7 @@ vulkanContext *initVulkan(vgeWindow *window) {
     return context;
 }
 
-void destroyVulkan(vulkanContext *context) {
+void destroyVulkan(pVulkanContext context) {
     vkDeviceWaitIdle(context->device);
 
     #ifndef NDEBUG

@@ -5,13 +5,18 @@
 #ifndef MODELSTRUCTS_H
 #define MODELSTRUCTS_H
 #include <stdint.h>
-#include "../vulkan/vulkanDefs.h"
 
 typedef struct VgeVertexInfo {
-	uint32_t offset;
-	uint32_t size;
-	uint32_t stride;
+	uint64_t numVerices;
+	uint32_t sizeVertex;
+	void * data;
 } vgeVertexInfo, *pVgeVertexInfo;
+
+typedef struct VgeIndexInfo {
+	uint64_t numIndexes;
+	uint32_t sizeIndex;
+	void * data;
+} vgeIndexInfo, *pVgeIndexInfo;
 
 #ifdef VGE_GRAPHICS_VULKAN
 #include "../vulkan/vulkanBuffer.h"
@@ -19,10 +24,12 @@ typedef struct VgeVertexInfo {
 
 
 typedef struct VgeModel {
-	vgeVertexBuffer vertexBuffer;
-	vgeIndexBuffer indexBuffer;
+	vgeVertexInfo vertexInfo;
+	pVulkanBuffer vertexBuffer;
+	vgeIndexInfo indexInfo;
+	pVulkanBuffer indexBuffer;
 } vgeModel, *pVgeModel;
 
-pVgeModel createVgeModel(void *vertexData, uint32_t *indexData);
+pVgeModel createVgeModel(pVulkanContext context, pVgeIndexInfo indexInfo, pVgeVertexInfo vertexInfo);
 
 #endif //MODELSTRUCTS_H

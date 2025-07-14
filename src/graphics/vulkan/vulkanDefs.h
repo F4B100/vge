@@ -47,6 +47,6 @@ typedef struct VulkanContext {
 #ifndef nDEBUG
     VkDebugUtilsMessengerEXT debugMessenger;
 #endif
-} vulkanContext;
+} vulkanContext, *pVulkanContext;
 
 #endif //VULKANDEFS_H

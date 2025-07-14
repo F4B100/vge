@@ -36,7 +36,7 @@ VkCommandBuffer *createCommandBuffer(uint32_t numBuffers, VkCommandPool commandP
     return buffers;
 }
 
-VkCommandBuffer beginSingleTimeCommand(vulkanContext *context) {
+VkCommandBuffer beginSingleTimeCommand(pVulkanContext context) {
 	VkCommandBufferAllocateInfo allocInfo = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 											 .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 											 .commandPool = context->commandPool,
@@ -53,7 +53,7 @@ VkCommandBuffer beginSingleTimeCommand(vulkanContext *context) {
 	return commandBuffer;
 }
 
-void endSingleTimeCommand(vulkanContext *context, VkCommandBuffer commandBuffer, VkQueue queue) {
+void endSingleTimeCommand(pVulkanContext context, VkCommandBuffer commandBuffer, VkQueue queue) {
 	vkEndCommandBuffer(commandBuffer);
 
 	VkSubmitInfo submitInfo = {};
