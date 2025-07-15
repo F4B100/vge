@@ -14,6 +14,10 @@
 #include "vulkan/vulkanPhysicalDevice.h"
 #include "vulkan/vulkanSwapChain.h"
 #include "vulkan/vulkanRender.h"
+#include "vulkan/vulkanBuffer.h"
 #endif
+
+#include "model/modelStructs.h"
+#include "model/defaultModels.h"
 
 #endif //VGEGRAPHICS_H

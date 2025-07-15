@@ -25,14 +25,15 @@ typedef struct VgePipelineGraphicsCreateInfo_t {
 typedef struct VgePipelineGraphics_t {
 	VkPipeline pipeline;
 	VkPipelineLayout pipelineLayout;
-	VkDescriptorSet descriptorSetLayout;
+	VkDescriptorPool descriptorPool;
+	VkDescriptorSetLayout descriptorSetLayout;
 	VkShaderModule vertShaderModule;
 	VkShaderModule fragShaderModule;
-} VgePipelineGraphics;
+} vgePipelineGraphics, *pVgePipelineGraphics;
 
-VgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info);
+vgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info);
 void createDescriptorPool(VkDevice device, VkDescriptorPool *toCreate);
 void createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkRenderPass *toCreate);
-void destroyGraphicsPipeline(VkDevice device, VgePipelineGraphics *pipeline);
+void destroyGraphicsPipeline(VkDevice device, vgePipelineGraphics *pipeline);
 
 #endif //VULKANPIPELINE_H

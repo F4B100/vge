@@ -31,9 +31,17 @@ void copyBuffer(vulkanContext *context, pVulkanBuffer src, pVulkanBuffer dst) ;
 
 uint32_t findMemoryType(vulkanContext *context, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-pVulkanBuffer createVulkanBuffer(vulkanContext *context, uint32_t numIndexes, uint32_t sizeIndex, void * data, VkBufferUsageFlags usage);
+pVulkanBuffer createVulkanBuffer(vulkanContext *context, uint32_t numElements, uint32_t sizeElements, void * data, VkBufferUsageFlags usage);
 
-#define createVulkanIndexBuffer(context,numIndexes,sizeIndex,indexData) createVulkanBuffer(context, numIndexes, sizeIndex, indexData, VK_BUFFER_USAGE_INDEX_BUFFER_BIT)
-#define createVulkanVertexBuffer(context,numVertexes,sizeVertex,vertexData) createVulkanBuffer(context, numVertexes, sizeVertex, vertexData, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)
+#define createVulkanIndexBuffer(context,numIndexes,sizeIndex,indexData) createVulkanBuffer(context,numIndexes,sizeIndex,indexData,VK_BUFFER_USAGE_INDEX_BUFFER_BIT)
+#define createVulkanVertexBuffer(context,numVertexes,sizeVertex,vertexData) createVulkanBuffer(context,numVertexes,sizeVertex,vertexData,VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)
+
+#define createVulkanVertexBufferFromInfo(context,vertexInfo) createVulkanVertexBuffer(context,vertexInfo->numVertices,vertexInfo->sizeVertex,vertexInfo->data)
+#define createVulkanIndexBufferFromInfo(context,indexInfo) createVulkanIndexBuffer(context,indexInfo->numIndexes,indexInfo->sizeIndex,indexInfo->data)
+
+pVulkanBuffer createUniformBuffer(vulkanContext *context, uint64_t sizeUniform, void * data);
+void updateUniformBuffer(vulkanContext *context, pVulkanBuffer uniformBuffer, void* data);
+
+#define createVulkanUniformBufferFromInfo(context,uniformInfo) createUniformBuffer(context,uniformInfo->sizeUniform,uniformInfo->data)
 
 #endif //VULKANBUFFER_H

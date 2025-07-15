@@ -76,10 +76,10 @@ void destroyBuffer(pVulkanContext context, pVulkanBuffer buffer) {
 	free(buffer);
 }
 
-pVulkanBuffer createVulkanBuffer(vulkanContext *context, uint32_t numIndexes, uint32_t sizeIndex, void * data, VkBufferUsageFlags usage) {
+pVulkanBuffer createVulkanBuffer(vulkanContext *context, uint32_t numElements, uint32_t sizeElements, void * data, VkBufferUsageFlags usage) {
     pVulkanBuffer stagingBuffer = initBuffer(
     	context,
-		sizeIndex * numIndexes,
+		sizeElements * numElements,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 		);
@@ -91,7 +91,7 @@ pVulkanBuffer createVulkanBuffer(vulkanContext *context, uint32_t numIndexes, ui
 
 	pVulkanBuffer buffer = initBuffer(
 		context,
-		sizeIndex * numIndexes,
+		sizeElements * numElements,
 		VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
@@ -100,4 +100,28 @@ pVulkanBuffer createVulkanBuffer(vulkanContext *context, uint32_t numIndexes, ui
 
     destroyBuffer(context, stagingBuffer);
 	return buffer;
+}
+
+pVulkanBuffer createUniformBuffer(vulkanContext *context, uint64_t sizeUniform, void *data) {
+	pVulkanBuffer uniformBuffer = initBuffer(
+		context,
+		sizeUniform,
+		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+		);
+
+	void* mappedData;
+	vkMapMemory(context->device, uniformBuffer->bufferMemory, 0, uniformBuffer->size, 0, &mappedData);
+	memcpy(mappedData, data, sizeUniform);
+	vkUnmapMemory(context->device, uniformBuffer->bufferMemory);
+
+	return uniformBuffer;
+
+}
+
+void updateUniformBuffer(vulkanContext *context, pVulkanBuffer uniformBuffer, void* data) {
+	void* mappedData;
+	vkMapMemory(context->device, uniformBuffer->bufferMemory, 0, uniformBuffer->size, 0, &mappedData);
+	memcpy(mappedData, data, uniformBuffer->size);
+	vkUnmapMemory(context->device, uniformBuffer->bufferMemory);
 }

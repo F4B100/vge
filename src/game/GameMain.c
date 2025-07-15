@@ -52,7 +52,7 @@ void GameInit() {
         .renderPass = context->renderPass
     };
 
-    VgePipelineGraphics *pipeline = createGraphicsPipeline(&pipelineInfo);
+    vgePipelineGraphics *pipeline = createGraphicsPipeline(&pipelineInfo);
 
     info.graphicsP = pipeline;
 
@@ -63,9 +63,13 @@ void GameInit() {
 
     info.frameContext = createFrameContext(info.frameContexCount, info.graphics->swapChainImageCount, info.graphics->device, info.graphics->commandPool);
 
+	info.model = createDefaultModel(context, info.graphicsP, VGE_MODEL_TRIANGLE);
+
     GameStart(&info);
 
     destroyFrameContext(info.frameContext, info.graphics->device, info.frameContexCount, info.graphics->swapChainImageCount);
+
+	destroyVgeModel(info.graphics, info.model);
 
     destroyGraphicsPipeline(context->device, pipeline);
     destroyVulkan(context);
@@ -101,13 +105,15 @@ void GameLoop(gameInfo *info) {
 
     renderPassStart(&info->frameContext[info->currentFrame], info->graphics->renderPass, info->graphics->swapChainExtent, info->graphics->frameBuffers, &clearColor);
 
-    if (info->timeElapsed > 1.0f) {
-        printf("fps: %d\n", info->frameCount);
-        info->timeElapsed -= 1.0f;
-        info->frameCount = 0;
-    }
-    info->timeElapsed += info->deltaTime;
-    info->frameCount++;
+	drawModel(info->graphics, &info->frameContext[info->currentFrame], info->graphicsP, info->model);
 
     renderPassEnd(&info->frameContext[info->currentFrame]);
+
+	if (info->timeElapsed > 1.0f) {
+		printf("fps: %d\n", info->frameCount);
+		info->timeElapsed -= 1.0f;
+		info->frameCount = 0;
+	}
+	info->timeElapsed += info->deltaTime;
+	info->frameCount++;
 }

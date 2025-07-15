@@ -213,9 +213,9 @@ VkVertexInputAttributeDescription *getAttributeDescription3D() {
     return attributeDescription;
 }
 
-VgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info) {
-    VgePipelineGraphics * newPipeline= malloc(sizeof(VgePipelineGraphics));
-    memset(newPipeline, 0, sizeof(VgePipelineGraphics));
+vgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info) {
+    vgePipelineGraphics * newPipeline= malloc(sizeof(vgePipelineGraphics));
+    memset(newPipeline, 0, sizeof(vgePipelineGraphics));
 
     spirVCode *codeVert = readSPIRVFile(info->vertShaderPath);
     spirVCode *codeFrag = readSPIRVFile(info->fragShaderPath);
@@ -248,7 +248,7 @@ VgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info)
         fragShaderStageInfo
     };
 
-    VkVertexInputBindingDescription *bindingDescriptor = getBindingDescription2D(16);
+    VkVertexInputBindingDescription *bindingDescriptor = getBindingDescription2D(28);
 
     VkVertexInputAttributeDescription *attributeDescriptor = getAttributeDescription2D();
 
@@ -347,10 +347,12 @@ VgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info)
     };
 
     VkDescriptorSetLayout descriptorSetLayout;
+	VkDescriptorPool descriptorPool;
 
-    createDescriptorSetLayout(info->device, &descriptorSetLayout);
+	createDescriptorSetLayout(info->device, &descriptorSetLayout);
+	createDescriptorPool(info->device, &descriptorPool);
 
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo = {
+	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
         .setLayoutCount = 1,
         .pSetLayouts = &descriptorSetLayout,
@@ -387,6 +389,9 @@ VgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info)
 
     newPipeline->fragShaderModule = vertShaderModule;
     newPipeline->vertShaderModule = fragShaderModule;
+	newPipeline->descriptorSetLayout = descriptorSetLayout;
+	newPipeline->descriptorPool = descriptorPool;
+
 
     free(codeVert->code);
     free(codeVert);
@@ -394,11 +399,10 @@ VgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info)
     free(codeFrag);
     free(bindingDescriptor);
     free(attributeDescriptor);
-    vkDestroyDescriptorSetLayout(info->device, descriptorSetLayout, nullptr);
     return newPipeline;
 }
 
-void destroyGraphicsPipeline(VkDevice device, VgePipelineGraphics *pipeline) {
+void destroyGraphicsPipeline(VkDevice device, vgePipelineGraphics *pipeline) {
     vkDestroyShaderModule(device, pipeline->fragShaderModule, nullptr);
     vkDestroyShaderModule(device, pipeline->vertShaderModule, nullptr);
 

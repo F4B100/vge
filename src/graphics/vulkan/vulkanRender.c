@@ -128,7 +128,33 @@ void renderPassEnd(frameContext *frameContext) {
 	vkCmdEndRenderPass(frameContext->commandBuffer);
 }
 
-void drawIndexed() {
+void drawModel(pVulkanContext context, frameContext *frameContext, pVgePipelineGraphics graphicsPipeline, pVgeModel model) {
+	vkCmdBindPipeline(frameContext->commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->pipeline);
+
+	VkViewport viewport = {
+		.x = 0.0f,
+		.y = 0.0f,
+		.width = (float) context->swapChainExtent.width,
+		.height = (float) context->swapChainExtent.height,
+		.minDepth = 0.0f,
+		.maxDepth = 1.0f,
+	};
+
+	vkCmdSetViewport(frameContext->commandBuffer, 0, 1, &viewport);
+
+	VkRect2D scissor = {
+		.offset = {0, 0},
+		.extent = context->swapChainExtent
+	};
+
+	vkCmdSetScissor(frameContext->commandBuffer, 0, 1, &scissor);
+
+	VkDeviceSize offsets[] = {0};
+	vkCmdBindVertexBuffers(frameContext->commandBuffer, 0, 1, &model->vertexBuffer->buffer, offsets);
+	vkCmdBindIndexBuffer(frameContext->commandBuffer, model->indexBuffer->buffer, 0, VK_INDEX_TYPE_UINT32);
+
+	vkCmdBindDescriptorSets(frameContext->commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->pipelineLayout, 0, 1, &model->uniformBuffer->descriptorSet, 0, nullptr);
+	vkCmdDrawIndexed(frameContext->commandBuffer, model->indexInfo->numIndexes, 1, 0, 0, 0);
 }
 
 void endFrame(frameContext *frameContext, VkSwapchainKHR swapChain, VkQueue presentQueue, VkQueue graphicsQueue) {

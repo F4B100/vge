@@ -5,9 +5,11 @@
 #ifndef MODELSTRUCTS_H
 #define MODELSTRUCTS_H
 #include <stdint.h>
+#include "../vulkan/vulkanPipeline.h"
+#include "../vulkan/vulkanBuffer.h"
 
 typedef struct VgeVertexInfo {
-	uint64_t numVerices;
+	uint64_t numVertices;
 	uint32_t sizeVertex;
 	void * data;
 } vgeVertexInfo, *pVgeVertexInfo;
@@ -18,18 +20,26 @@ typedef struct VgeIndexInfo {
 	void * data;
 } vgeIndexInfo, *pVgeIndexInfo;
 
-#ifdef VGE_GRAPHICS_VULKAN
-#include "../vulkan/vulkanBuffer.h"
-#endif //VGE_GRAPHICS_VULKAN
+typedef struct VgeUniformInfo {
+	uint64_t sizeUniform;
+	void * data;
+} vgeUniformInfo, *pVgeUniformInfo;
 
+typedef struct VgeUniformBuffer {
+	pVulkanBuffer uniformBuffer;
+	VkDescriptorSet descriptorSet;
+} vgeUniformBuffer, *pVgeUniformBuffer;
 
 typedef struct VgeModel {
-	vgeVertexInfo vertexInfo;
+	pVgeVertexInfo vertexInfo;
 	pVulkanBuffer vertexBuffer;
-	vgeIndexInfo indexInfo;
+	pVgeIndexInfo indexInfo;
 	pVulkanBuffer indexBuffer;
+	pVgeUniformInfo uniformInfo;
+	pVgeUniformBuffer uniformBuffer;
 } vgeModel, *pVgeModel;
 
-pVgeModel createVgeModel(pVulkanContext context, pVgeIndexInfo indexInfo, pVgeVertexInfo vertexInfo);
+pVgeModel createVgeModel(pVulkanContext context, pVgeIndexInfo indexInfo, pVgeVertexInfo vertexInfo, pVgeUniformInfo uniformInfo, pVgePipelineGraphics pipeline);
+void destroyVgeModel(pVulkanContext context, pVgeModel model);
 
 #endif //MODELSTRUCTS_H

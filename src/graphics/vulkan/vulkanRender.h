@@ -6,7 +6,8 @@
 #define VULKANRENDER_H
 
 #include "vulkanDefs.h"
-#include "vulkanCommands.h"
+#include "../model/modelStructs.h"
+#include "vulkanPipeline.h"
 
 typedef struct SwapChainSem {
 	VkSemaphore renderFinishedSemaphore;
@@ -27,6 +28,8 @@ void startFrame(frameContext *frameContext, VkDevice device, VkSwapchainKHR swap
 
 void renderPassStart(frameContext *frameContext, VkRenderPass renderPass, VkExtent2D extent, VkFramebuffer *frameBuffers, VkClearValue *clearValues);
 void renderPassEnd(frameContext *frameContext);
+
+void drawModel(pVulkanContext context, frameContext *frameContext, pVgePipelineGraphics graphicsPipeline, pVgeModel model) ;
 
 void endFrame(frameContext *frameContext, VkSwapchainKHR swapChain, VkQueue presentQueue, VkQueue graphicsQueue);
 
