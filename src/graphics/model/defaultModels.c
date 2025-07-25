@@ -4,26 +4,30 @@
 
 #include "defaultModels.h"
 
-#define NUM_TRIANGLE_VERTICES 3
+#define NUM_TRIANGLE_VERTICES 4
 float triangleVertices[] = {
-	0.0f, 0.5f, 1.0f, 0.0f, 0.0f, 0.5f, 1.0f,
-	-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-	0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f
+	-0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+	0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+	0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+	-0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
 };
 
-#define NUM_TRIANGLE_INDICES 3
+#define NUM_TRIANGLE_INDICES 6
 uint32_t triangleIndices[] = {
 	0,
 	1,
-	2
+	2,
+	2,
+	3,
+	0
 };
 
 struct triangleUniforms {
-	vec2 position;
+	mat4 projectionViewMatrix;
 };
 
 struct triangleUniforms triangleUniformInfo = {
-	.position = {0.5f, 0.5f}
+	.projectionViewMatrix = GLM_MAT4_IDENTITY_INIT
 };
 
 vgeVertexInfo triangleInfoVertex = {

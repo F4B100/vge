@@ -19,6 +19,8 @@ typedef struct GameInfo {
     uint32_t currentFrame;
     frameContext *frameContext;
 
+	uint32_t lastMouseX, lastMouseY;
+	float pitch, yaw;
 
     double deltaTime;
     uint32_t frameCount;

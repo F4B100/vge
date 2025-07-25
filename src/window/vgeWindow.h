@@ -44,6 +44,7 @@ uint8_t physicalDeviceSupportsPresentation(VkPhysicalDevice physicalDevice, uint
 
 // Callback Setting
 void vgeSetWindowSizeCallback(pVgeWindow window, void (*func)(pVgeWindow window, uint32_t width, uint32_t height));
+void vgeSetMouseMoveCallback(pVgeWindow window, void (*func)(pVgeWindow window, uint32_t width, uint32_t height));
 
 // Get section
 void vgeGetWindowName(pVgeWindow window, char **name);

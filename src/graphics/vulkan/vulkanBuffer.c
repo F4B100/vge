@@ -76,18 +76,23 @@ void destroyBuffer(pVulkanContext context, pVulkanBuffer buffer) {
 	free(buffer);
 }
 
-pVulkanBuffer createVulkanBuffer(vulkanContext *context, uint32_t numElements, uint32_t sizeElements, void * data, VkBufferUsageFlags usage) {
-    pVulkanBuffer stagingBuffer = initBuffer(
-    	context,
+pVulkanBuffer createStagingBuffer(vulkanContext *context, uint32_t numElements, uint32_t sizeElements, void * data) {
+	pVulkanBuffer stagingBuffer = initBuffer(
+		context,
 		sizeElements * numElements,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 		);
 
-    void* deviceData;
-    vkMapMemory(context->device, stagingBuffer->bufferMemory, 0, stagingBuffer->size, 0, &deviceData);
-    memcpy(deviceData, data, stagingBuffer->size);
-    vkUnmapMemory(context->device, stagingBuffer->bufferMemory);
+	void* deviceData;
+	vkMapMemory(context->device, stagingBuffer->bufferMemory, 0, stagingBuffer->size, 0, &deviceData);
+	memcpy(deviceData, data, stagingBuffer->size);
+	vkUnmapMemory(context->device, stagingBuffer->bufferMemory);
+	return stagingBuffer;
+}
+
+pVulkanBuffer createVulkanBuffer(vulkanContext *context, uint32_t numElements, uint32_t sizeElements, void * data, VkBufferUsageFlags usage) {
+    pVulkanBuffer stagingBuffer = createStagingBuffer(context, numElements, sizeElements, data);
 
 	pVulkanBuffer buffer = initBuffer(
 		context,

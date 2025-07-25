@@ -2,9 +2,11 @@
 // Created by fabio on 22-05-2025.
 //
 
-#include <stdio.h>
-#include <math.h>
 #include "GameMain.h"
+#include <math.h>
+#include <stdio.h>
+
+#include "../../cmake-build-debug/_deps/cglm-src/include/cglm/call/cam.h"
 
 gameInfo info;
 
@@ -29,6 +31,36 @@ void OnResize(pVgeWindow window, uint32_t width, uint32_t height) {
         );
 }
 
+void OnMouseMove(pVgeWindow window, uint32_t x, uint32_t y) {
+	uint32_t windowX, windowY;
+	vgeGetContentSize(window, &windowX, &windowY);
+
+	info.yaw += (float)((int)x - (int)windowX / 2) / windowX, info.pitch += (float)(int)((int)y - (int)windowY / 2) / windowY;
+
+	mat4 mat;
+
+	vec3 frontvec = {cos(info.yaw) * cos(info.pitch),-1.0f * sin(info.pitch), sin(info.yaw) * cos(info.pitch)};
+	glm_normalize(frontvec);
+
+	vec3 camPos = {0.0f, 0.0f, 0.0f};
+	vec3 camFront = {0.0f, 0.0f, 0.0f};
+	glm_vec3_add(camPos, frontvec, camFront);
+	vec3 camUp = {0.0f, 1.0f, 0.0f};
+
+	glm_lookat(camPos, camFront, camUp, mat);
+
+	memcpy(info.model->indexInfo->data, &mat, sizeof(mat4));
+
+	printf("mouse: %f|%f\n", info.yaw, info.pitch);
+
+	updateUniformsFromModel(info.graphics, info.model);
+
+	SetCursorPos(
+		windowX / 2,
+		windowY / 2
+	);
+}
+
 void GameInit() {
     vgeInit();
 
@@ -38,6 +70,7 @@ void GameInit() {
 	);
 
     vgeSetWindowSizeCallback(info.window, OnResize);
+	vgeSetMouseMoveCallback(info.window, OnMouseMove);
 
     pVulkanContext context = initVulkan(info.window);
 
@@ -58,6 +91,8 @@ void GameInit() {
 
     info.frameCount = 0;
     info.currentFrame = 0;
+
+	info.pitch = 0.0f;info.yaw = 0.0f;
 
     info.frameContexCount = info.graphics->swapChainImageCount;
 

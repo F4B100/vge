@@ -421,7 +421,10 @@ return window;
 
 #endif
 
-// Callbacks are inherently platform-agnostic so no ifdef's are needed
 void vgeSetWindowSizeCallback(pVgeWindow window, void (*func)(pVgeWindow window, uint32_t width, uint32_t height)) {
-	window->resizeCallback = (void(*)(struct VgeWindow_t*, uint32_t, uint32_t))func;
+	window->resizeCallback = func;
+}
+
+void vgeSetMouseMoveCallback(pVgeWindow window, void (*func)(pVgeWindow window, uint32_t width, uint32_t height)) {
+	window->mouseMoveCallback = func;
 }

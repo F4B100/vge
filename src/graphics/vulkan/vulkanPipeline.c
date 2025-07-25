@@ -120,18 +120,24 @@ void createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkRenderPa
 }
 
 void createDescriptorSetLayout(VkDevice device, VkDescriptorSetLayout *toCreate) {
-    VkDescriptorSetLayoutBinding uboLayoutBinding = {
-    .binding = 0,
-    .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-    .descriptorCount = 1,
-    .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-    .pImmutableSamplers = nullptr
-    };
+    VkDescriptorSetLayoutBinding bindings[2];
+
+    bindings[0].binding = 0;
+    bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    bindings[0].descriptorCount = 1;
+    bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    bindings[0].pImmutableSamplers = nullptr;
+
+	bindings[1].binding = 1;
+	bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	bindings[1].descriptorCount = 1;
+	bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	bindings[1].pImmutableSamplers = nullptr;
 
     VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = {
     .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-    .bindingCount = 1,
-    .pBindings = &uboLayoutBinding,
+    .bindingCount = 2,
+    .pBindings = bindings,
     };
 
     if (vkCreateDescriptorSetLayout(device, &descriptorSetLayoutInfo, nullptr, toCreate) != VK_SUCCESS) {
@@ -140,19 +146,25 @@ void createDescriptorSetLayout(VkDevice device, VkDescriptorSetLayout *toCreate)
 }
 
 void createDescriptorPool(VkDevice device, VkDescriptorPool *toCreate) {
-    VkDescriptorPoolSize poolSize = {
-        .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-        .descriptorCount = 1
+    VkDescriptorPoolSize poolSizes[2] = {
+    	{
+	        .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+	        .descriptorCount = 1
+		},
+    	{
+    		.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			.descriptorCount = 1
+    	}
     };
 
     VkDescriptorPoolCreateInfo poolInfo = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-        .poolSizeCount = 1,
+        .poolSizeCount = 2,
+        .pPoolSizes = poolSizes,
         .maxSets = 1,
-        .pPoolSizes = &poolSize,
     };
 
-    if (vkCreateDescriptorPool(device, &poolInfo, nullptr, toCreate) != VK_SUCCESS) {
+    if (vkCreateDescriptorPool(device, &poolInfo, nullptr, toCreate)) {
         printf("failed to create descriptor pool!");
     }
 }

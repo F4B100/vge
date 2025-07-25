@@ -20,7 +20,6 @@
     const char * validationExtensions[] = {
         VK_EXT_DEBUG_UTILS_EXTENSION_NAME
     };
-#endif
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -34,19 +33,20 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 }
 
 void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+	printf("destroying debug messenger\n");
+    PFN_vkDestroyDebugUtilsMessengerEXT func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
         func(instance, debugMessenger, pAllocator);
     }
 }
 
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+	printf("creating debug messenger\n");
+    PFN_vkCreateDebugUtilsMessengerEXT func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     if (func != nullptr) {
-        return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-    } else {
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
-    }
+		return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
+	}
+	return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
 void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT *createInfo) {
@@ -66,8 +66,9 @@ void createValidationMessenger(VkInstance instance, VkDebugUtilsMessengerEXT *to
         fprintf(stderr, "failed to set up debug messenger!");
     }
 }
+#endif
 
-void createVulkanInstance(const char *windowName, VkInstance *toCreate) {
+void createVulkanInstance(const char *windowName, pVulkanContext context) {
 
     VkApplicationInfo appInfo = {
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -88,21 +89,29 @@ void createVulkanInstance(const char *windowName, VkInstance *toCreate) {
     uint32_t extensionCount;
     const char **extensionNames;
 
-	if (enableValidationLayers) {
+	#ifndef NDEBUG
 		extensionNames = vgeGetVulkanExtensions(&extensionCount, VALIDATION_EXTENSIONS_COUNT, validationExtensions);
 		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};
 		populateDebugMessengerCreateInfo(&debugCreateInfo);
 		createInfo.pNext = &debugCreateInfo;
-	} else {
+	#else
 		extensionNames = vgeGetVulkanExtensions(&extensionCount, 0, nullptr);
 		createInfo.pNext = nullptr;
 	}
+	#endif
 
     createInfo.enabledExtensionCount = extensionCount;
     createInfo.ppEnabledExtensionNames = extensionNames;
 
-    if (vkCreateInstance(&createInfo, nullptr, toCreate)) {
+    if (vkCreateInstance(&createInfo, nullptr, &context->instance)) {
         fprintf(stderr, "Instance Creation Failed\n");
     }
+
+	#ifndef NDEBUG
+	if (enableValidationLayers) {
+		createValidationMessenger(context->instance, &context->debugMessenger);
+	}
+	#endif
+
     free(extensionNames);
 }

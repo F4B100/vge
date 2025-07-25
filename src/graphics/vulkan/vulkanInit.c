@@ -27,7 +27,7 @@ pVulkanContext initVulkan(vgeWindow *window) {
 
     createVulkanInstance(
         windowName,
-        &context->instance
+        context
     );
 
     vgeCreateVulkanWindowSurface(

@@ -31,7 +31,25 @@ uint8_t isPhysicalDeviceSuitable(pVulkanContext context, VkPhysicalDevice physic
     isSuitable &= physicalDeviceProperties->deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ||
         physicalDeviceProperties->deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
 
+	VkPhysicalDeviceFeatures features;
+
+	vkGetPhysicalDeviceFeatures(physicalDevice, &features);
+
+	isSuitable &= features.samplerAnisotropy;
+
     return isSuitable;
+}
+
+pPhysicalDeviceProperties getProperties(VkPhysicalDevice physicalDevice) {
+	pPhysicalDeviceProperties physicalDeviceProperties = malloc(sizeof(pPhysicalDeviceProperties));
+
+	VkPhysicalDeviceProperties properties;
+
+	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+
+	physicalDeviceProperties->maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+
+	return physicalDeviceProperties;
 }
 
 uint8_t checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice) {
@@ -91,6 +109,8 @@ void choosePhysicalDevice(pVulkanContext context) {
     if (context->physicalDevice == VK_NULL_HANDLE) {
         fprintf(stderr, "Failed to find a suitable GPU.\n");
     }
+
+	context->physicalDeviceProperties = getProperties(context->physicalDevice);
 
     free(physicalDevices);
 }

@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include "../vulkan/vulkanPipeline.h"
 #include "../vulkan/vulkanBuffer.h"
+#include "../vulkan/vulkanTexture.h"
 
 typedef struct VgeVertexInfo {
 	uint64_t numVertices;
@@ -25,21 +26,21 @@ typedef struct VgeUniformInfo {
 	void * data;
 } vgeUniformInfo, *pVgeUniformInfo;
 
-typedef struct VgeUniformBuffer {
-	pVulkanBuffer uniformBuffer;
-	VkDescriptorSet descriptorSet;
-} vgeUniformBuffer, *pVgeUniformBuffer;
-
 typedef struct VgeModel {
 	pVgeVertexInfo vertexInfo;
 	pVulkanBuffer vertexBuffer;
 	pVgeIndexInfo indexInfo;
 	pVulkanBuffer indexBuffer;
 	pVgeUniformInfo uniformInfo;
-	pVgeUniformBuffer uniformBuffer;
+	pVulkanBuffer uniformBuffer;
+	pVgeVulkanTexture texture;
+	VkDescriptorSet descriptorSet;
+	pVgePipelineGraphics pipeline;
 } vgeModel, *pVgeModel;
 
 pVgeModel createVgeModel(pVulkanContext context, pVgeIndexInfo indexInfo, pVgeVertexInfo vertexInfo, pVgeUniformInfo uniformInfo, pVgePipelineGraphics pipeline);
 void destroyVgeModel(pVulkanContext context, pVgeModel model);
+
+#define updateUniformsFromModel(context,model) updateUniformBuffer(context,model->uniformBuffer,model->uniformInfo->data)
 
 #endif //MODELSTRUCTS_H

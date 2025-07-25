@@ -153,7 +153,7 @@ void drawModel(pVulkanContext context, frameContext *frameContext, pVgePipelineG
 	vkCmdBindVertexBuffers(frameContext->commandBuffer, 0, 1, &model->vertexBuffer->buffer, offsets);
 	vkCmdBindIndexBuffer(frameContext->commandBuffer, model->indexBuffer->buffer, 0, VK_INDEX_TYPE_UINT32);
 
-	vkCmdBindDescriptorSets(frameContext->commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->pipelineLayout, 0, 1, &model->uniformBuffer->descriptorSet, 0, nullptr);
+	vkCmdBindDescriptorSets(frameContext->commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->pipelineLayout, 0, 1, &model->descriptorSet, 0, nullptr);
 	vkCmdDrawIndexed(frameContext->commandBuffer, model->indexInfo->numIndexes, 1, 0, 0, 0);
 }
 

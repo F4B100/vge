@@ -23,9 +23,15 @@
 #define SPIRV_MAGIC_CONSTANT 0x07230203
 #define SHADER_FILE_MAX_SIZE 8192u
 
+typedef struct PhysicalDeviceProperties {
+	float maxAnisotropy;
+} physicalDeviceProperties, *pPhysicalDeviceProperties;
+
 typedef struct VulkanContext {
     VkInstance instance;
     VkPhysicalDevice physicalDevice;
+	pPhysicalDeviceProperties physicalDeviceProperties;
+
     VkSurfaceKHR surface;
 
     VkDevice device;
