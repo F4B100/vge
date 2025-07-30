@@ -4,6 +4,8 @@
 
 #include "vulkanBuffer.h"
 
+#include <string.h>
+
 pVulkanBuffer initBuffer(vulkanContext *context, uint64_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
 	pVulkanBuffer buffer = malloc(sizeof(vulkanBuffer));
 

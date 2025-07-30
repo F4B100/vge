@@ -71,10 +71,24 @@ typedef struct VgeGlobalContext_t {
 } vgeGlobalContext, *pVgeGlobalContext;
 
 #elifdef VGE_PLATFORM_WAYLAND
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_WAYLAND
+#include <GLFW/glfw3native.h>
+
 typedef struct VgeWindow {
     GLFWwindow* window;
-} vgeWindow;
+
+	void (*mouseMoveCallback)(struct VgeWindow *window, uint32_t x, uint32_t y);
+	void (*mouseLeftDownCallback)(struct VgeWindow *window, uint32_t x, uint32_t y);
+	void (*resizeCallback)(struct VgeWindow *window, uint32_t x, uint32_t y);
+} vgeWindow, *pVgeWindow;
+
+typedef struct VgeGlobalContext_t {
+	uint32_t numWindows;
+	pVgeWindow *windows;
+} vgeGlobalContext, *pVgeGlobalContext;
+
 #else
 #include <GLFW/glfw3.h>
 typedef struct VgeWindow {

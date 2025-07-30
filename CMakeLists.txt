@@ -43,13 +43,12 @@ IF (LINUX)
 	add_compile_definitions(VGE_OS_WAYLAND)
 	add_compile_definitions(VGE_PLATFORM_WAYLAND)
 ENDIF ()
-IF (NOT WIN32 AND NOT LINUX)
+IF (NOT WIN32)
 	CPMAddPackage(
 		NAME glfw
 		GITHUB_REPOSITORY glfw/glfw
 		GIT_TAG 3.4
 	)
-	target_link_libraries(vge PRIVATE glfw)
 ENDIF ()
 
 CPMAddPackage(
@@ -74,6 +73,9 @@ endif ()
 file(GLOB_RECURSE SRC_FILES "src/*.c" "src/*.h" "src/*.s")
 add_executable(vge main.c ${SRC_FILES})
 
+IF (NOT WIN32)
+	target_link_libraries(vge PRIVATE glfw)
+ENDIF ()
 
 target_link_libraries(vge PRIVATE cglm m stb Vulkan::Vulkan)
 target_include_directories(stb INTERFACE ${stb_SOURCE_DIR} ${cglm_SORCE_DIR} ${glfw_INCLUDE_DIR})

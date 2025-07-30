@@ -16,7 +16,13 @@ typedef struct VgeThread_t {
 typedef CRITICAL_SECTION vgeMutex, *pVgeMutex;
 typedef CONDITION_VARIABLE vgeCond, *pVgeCond;
 #elifdef VGE_PLATFORM_WAYLAND
+#include <pthread.h>
+typedef struct VgeThread_t {
+	pthread_t idThread;
+} vgeThread, *pVgeThread;
 
+typedef pthread_mutex_t vgeMutex, *pVgeMutex;
+typedef pthread_cond_t vgeCond, *pVgeCond;
 #else
 
 #endif

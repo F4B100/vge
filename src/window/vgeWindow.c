@@ -4,6 +4,10 @@
 
 #include "vgeWindow.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #ifdef VGE_PLATFORM_WIN32
 #include <stdio.h>
 #include <string.h>
@@ -387,20 +391,84 @@ uint8_t physicalDeviceSupportsPresentation(VkPhysicalDevice physicalDevice, uint
 
 #elifdef VGE_PLATFORM_WAYLAND
 
+vgeGlobalContext context = {
+	.numWindows = 0,
+	.windows = nullptr
+};
+
 void vgeInit() {
-
+	glfwInit();
 }
 
-vgeWindow * vgeWindowInit(const int32_t width, const int32_t height, const int8_t *title, GLFWmonitor *monitor, GLFWwindow *share) {
-vgeWindow *window = calloc(1, sizeof(vgeWindow));
-if (window == NULL) {
-return NULL;
+pVgeWindow vgeWindowInit(int32_t width, int32_t height, char *title) {
+	printf("%p\n", context.windows);
+	context.windows = realloc(context.windows, (context.numWindows + 1) * sizeof(pVgeWindow));
+
+	printf("%p\n", context.windows);
+
+	context.windows[context.numWindows]->window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+	glfwShowWindow(context.windows[context.numWindows]->window);
+	context.numWindows++;
+	return context.windows[context.numWindows - 1];
 }
-window->window = NULL;
-window->window = glfwCreateWindow(width, height, title, monitor, share);
-glfwShowWindow(window->window);
-return window;
+
+void vgeGetWindowName(pVgeWindow window, char **name) {
+	*name = (char *) glfwGetWindowTitle(window->window);
 }
+
+double vgeGetTimeSinceStart() {
+	return glfwGetTime();
+}
+
+uint32_t vgeIsWindowClosed(pVgeWindow window) {
+	return glfwWindowShouldClose(window->window);
+}
+
+void vgeHandleEvents() {
+	glfwPollEvents();
+}
+
+void vgeGetContentSize(pVgeWindow window, uint32_t *width, uint32_t *height) {
+	glfwGetWindowSize(window->window, width, height);
+}
+
+#ifdef VGE_GRAPHICS_VULKAN
+
+#include <vulkan/vulkan_wayland.h>
+
+#define NUM_REQUIRED_VGE_EXTENSIONS 3
+char *vgeExtensions[] = {
+	VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME,
+	VK_KHR_SURFACE_EXTENSION_NAME,
+	VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
+};
+
+const char **vgeGetVulkanExtensions(uint32_t *numExtensions, uint32_t numExtra, const char** extra) {
+	char **extensions = malloc(sizeof(char **) * (NUM_REQUIRED_VGE_EXTENSIONS + numExtra));
+
+	for (int i = 0; i < NUM_REQUIRED_VGE_EXTENSIONS; ++i) {
+		extensions[i] = malloc(sizeof(char) * strlen(vgeExtensions[i]));
+		strcpy(extensions[i], vgeExtensions[i]);
+	}
+	for (int i = 0; i < numExtra; ++i) {
+		extensions[NUM_REQUIRED_VGE_EXTENSIONS + i] = malloc(sizeof(char) * strlen(extra[i]));
+		strcpy(extensions[NUM_REQUIRED_VGE_EXTENSIONS + i], extra[i]);
+	}
+	*numExtensions = NUM_REQUIRED_VGE_EXTENSIONS + numExtra;
+	return (const char **)extensions;
+}
+
+void vgeCreateVulkanWindowSurface(vgeWindow *window, VkInstance instance,VkSurfaceKHR *toCreate) {
+	glfwCreateWindowSurface(instance, window->window, nullptr, toCreate);
+}
+
+uint8_t physicalDeviceSupportsPresentation(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex) {
+	const VkBool32 presentSupport = vkGetPhysicalDeviceWaylandPresentationSupportKHR(physicalDevice, queueFamilyIndex, glfwGetWaylandDisplay());
+
+	return presentSupport == VK_TRUE;
+}
+
+#endif
 
 #else
 
@@ -424,6 +492,7 @@ return window;
 void vgeSetWindowSizeCallback(pVgeWindow window, void (*func)(pVgeWindow window, uint32_t width, uint32_t height)) {
 	window->resizeCallback = func;
 }
+
 
 void vgeSetMouseMoveCallback(pVgeWindow window, void (*func)(pVgeWindow window, uint32_t width, uint32_t height)) {
 	window->mouseMoveCallback = func;

@@ -5,12 +5,7 @@
 #ifndef VGEWINDOW_H
 #define VGEWINDOW_H
 
-#include "vgeWIndowDefs.h"
-
-#define WINDOW_CLASS_NAME L"WindowClass"
-#define WINDOW_MENU_NAME L"Menu_name"
-
-#define WINDOW_CREATE_FAIL_MESSAGE L"Create Window failed!"
+#include "vgeWindowDefs.h"
 
 void vgeInit();
 
@@ -27,8 +22,23 @@ void vgeHandleEvents();
 uint32_t vgeIsWindowClosed(pVgeWindow window);
 
 #ifdef VGE_PLATFORM_WIN32
+#define WINDOW_CLASS_NAME L"WindowClass"
+#define WINDOW_MENU_NAME L"Menu_name"
+
+#define WINDOW_CREATE_FAIL_MESSAGE L"Create Window failed!"
+
 LRESULT CALLBACK vgeWindowsWProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 #define WINDOW_PROCEDURE vgeWindowsWProc
+
+#endif
+
+// Callback Setting
+void vgeSetWindowSizeCallback(pVgeWindow window, void (*func)(pVgeWindow window, uint32_t width, uint32_t height));
+
+void vgeSetMouseMoveCallback(pVgeWindow window, void (*func)(pVgeWindow window, uint32_t width, uint32_t height));
+
+// Get section
+void vgeGetWindowName(pVgeWindow window, char **name);
 
 #ifdef VGE_GRAPHICS_VULKAN
 #include <vulkan/vulkan.h>
@@ -39,14 +49,5 @@ void vgeCreateVulkanWindowSurface(vgeWindow *window, VkInstance instance,VkSurfa
 
 uint8_t physicalDeviceSupportsPresentation(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex);
 #endif
-
-#endif
-
-// Callback Setting
-void vgeSetWindowSizeCallback(pVgeWindow window, void (*func)(pVgeWindow window, uint32_t width, uint32_t height));
-void vgeSetMouseMoveCallback(pVgeWindow window, void (*func)(pVgeWindow window, uint32_t width, uint32_t height));
-
-// Get section
-void vgeGetWindowName(pVgeWindow window, char **name);
 
 #endif //VGEWINDOW_H

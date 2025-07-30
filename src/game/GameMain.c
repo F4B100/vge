@@ -5,6 +5,7 @@
 #include "GameMain.h"
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "../../cmake-build-debug/_deps/cglm-src/include/cglm/call/cam.h"
 
@@ -55,7 +56,8 @@ void OnMouseMove(pVgeWindow window, uint32_t x, uint32_t y) {
 
 	updateUniformsFromModel(info.graphics, info.model);
 
-	SetCursorPos(
+	glfwSetCursorPos(
+		window->window,
 		windowX / 2,
 		windowY / 2
 	);
