@@ -6,7 +6,6 @@
 #define DEFAULTMODELS_H
 
 #include "modelStructs.h"
-#include <cglm/cglm.h>
 
 typedef uint32_t vgeDefaultModelId;
 

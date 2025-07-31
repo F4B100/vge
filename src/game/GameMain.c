@@ -33,6 +33,7 @@ void OnResize(pVgeWindow window, uint32_t width, uint32_t height) {
 }
 
 void OnMouseMove(pVgeWindow window, uint32_t x, uint32_t y) {
+	/*
 	uint32_t windowX, windowY;
 	vgeGetContentSize(window, &windowX, &windowY);
 
@@ -60,7 +61,7 @@ void OnMouseMove(pVgeWindow window, uint32_t x, uint32_t y) {
 		window->window,
 		windowX / 2,
 		windowY / 2
-	);
+	);*/
 }
 
 void GameInit() {
