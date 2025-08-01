@@ -149,8 +149,8 @@ void initSampler(pVulkanContext context, pVgeVulkanTexture texture) {
 		.addressModeU = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
 		.addressModeV = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
 		.addressModeW = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
-		.anisotropyEnable = VK_TRUE,
-		.maxAnisotropy = context->physicalDeviceProperties->maxAnisotropy,
+		.anisotropyEnable = VK_FALSE,
+		.maxAnisotropy = 1.0f,
 		.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
 		.compareEnable = VK_FALSE,
 		.compareOp = VK_COMPARE_OP_ALWAYS,
@@ -167,6 +167,7 @@ void initSampler(pVulkanContext context, pVgeVulkanTexture texture) {
 }
 
 pVgeVulkanTexture createVgeVulkanTexture(pVulkanContext context, const char *path) {
+	pVgeVulkanTexture texture = calloc(sizeof(pVgeVulkanTexture), 1);
 	int texWidth, texHeight;
 	stbi_set_flip_vertically_on_load(1);
 	stbi_uc* pixels = stbi_load(path, &texWidth, &texHeight, nullptr, STBI_rgb_alpha);
@@ -179,8 +180,6 @@ pVgeVulkanTexture createVgeVulkanTexture(pVulkanContext context, const char *pat
 	pVulkanBuffer staging = createStagingBuffer(context, imageSize, 4, pixels);
 
 	stbi_image_free(pixels);
-
-	pVgeVulkanTexture texture = calloc(sizeof(pVgeVulkanTexture), 1);
 
 	createImage(
 		context,

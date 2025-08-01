@@ -97,7 +97,6 @@ void createVulkanInstance(const char *windowName, pVulkanContext context) {
 	#else
 		extensionNames = vgeGetVulkanExtensions(&extensionCount, 0, nullptr);
 		createInfo.pNext = nullptr;
-	}
 	#endif
 
     createInfo.enabledExtensionCount = extensionCount;
