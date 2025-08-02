@@ -71,13 +71,24 @@ typedef struct VgeGlobalContext_t {
 } vgeGlobalContext, *pVgeGlobalContext;
 
 #elifdef VGE_PLATFORM_WAYLAND
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WAYLAND
-#include <GLFW/glfw3native.h>
+
+#include <wayland-client.h>
+#include <wayland-client-protocol.h>
+
+typedef struct wl_display wlDisplay,* pWlDisplay;
+typedef struct wl_registry wlRegistry ,* pWlRegistry;
+typedef struct wl_compositor wlCompositor,* pWlCompositor;
+typedef struct wl_surface wlSurface,* pWlSurface;
+typedef struct wl_keyboard wlKeyboard,* pWlKeyboard;
+typedef struct wl_pointer wlPointer,* pWlPointer;
+typedef struct wl_shm wlShm,* pWlShm;
+typedef struct wl_shm_pool wlShmPool,* pWlShmPool;
+typedef struct xdg_surface xdgSurface,* pXdgSurface;
+typedef struct xdg_toplevel xdgTopLevel,* pXdgToplevel;
+typedef struct xdg_wm_base xdgWmBase,* pXdgWmBase;
 
 typedef struct VgeWindow {
-    GLFWwindow* window;
+    pWlCompositor compositor;
 
 	void (*mouseMoveCallback)(struct VgeWindow *window, uint32_t x, uint32_t y);
 	void (*mouseLeftDownCallback)(struct VgeWindow *window, uint32_t x, uint32_t y);

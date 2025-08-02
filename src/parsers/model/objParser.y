@@ -15,6 +15,7 @@ typdef struct ObjModel {
 %}
 
 %define api.pure full
+%define api.prefix {obj}
 %parse-param { int *result }
 
 %union {
@@ -24,7 +25,7 @@ typdef struct ObjModel {
     int i;
 }
 
-%token OBJECT_NAME VERTEX_NORMAL VERTEX_TEXTURE VERTEX SHADING USE_MATERIAL MTL_NAME FACE
+%token <str> OBJECT_NAME VERTEX_NORMAL VERTEX_TEXTURE VERTEX SHADING USE_MATERIAL MTL_NAME FACE
 %token <f> FLOAT
 %token <path> MTL_PATH
 %token <str> STRING
@@ -39,15 +40,15 @@ input: /* EMPTY */
 line:
     | VERTEX FLOAT FLOAT FLOAT
     {
-
+        printf(ª%s %f %f %f\nª, $1, $2, $3, $4);
     }
     | VERTEX_NORMAL FLOAT FLOAT FLOAT
     {
-
+        printf(ª%s %f %f %f\nª, $1, $2, $3, $4);
     }
     | VERTEX_TEXTURE FLOAT FLOAT
     {
-
+        printf(ª%s %f %f\nª, $1, $2, $3);
     }
 
 ;
