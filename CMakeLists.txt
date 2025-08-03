@@ -5,6 +5,23 @@ set(CMAKE_C_STANDARD 23)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
+# Parser Compile Section --------------------------------------------------------------------------
+find_program(FLEX flex REQUIRED)
+find_program(BISON bison REQUIRED)
+file(GLOB_RECURSE FLEX_FILEX "src/parsers/*.l")
+file(GLOB_RECURSE BISON "src/parsers/*.y")
+
+foreach (flexFile ${FLEX_FILES})
+	add_custom_command(
+			COMMAND ${FLEX} ${flexFile}
+			DEPENDS ${flexFile}
+			COMMENT "Compiling flex lexer ${flexFile}"
+			VERBATIM
+	)
+endforeach ()
+add_custom_target(CompileParsers ALL DEPENDS ${SPIRV_OUTPUTS})
+# -------------------------------------------------------------------------------------------------
+
 # Shaders Compile Section -------------------------------------------------------------------------
 find_program(GLSLC glslc REQUIRED)
 
@@ -73,8 +90,12 @@ endif ()
 file(GLOB_RECURSE SRC_FILES "src/*.c" "src/*.h" "src/*.s")
 add_executable(vge main.c ${SRC_FILES})
 
-IF (NOT WIN32)
-	target_link_libraries(vge PRIVATE glfw)
+IF (WIN32)
+	target_link_options(vge PRIVATE -static -static-libgcc -static-libstdc++ -lwinpthread)
+ENDIF ()
+
+IF (LINUX)
+
 ENDIF ()
 
 target_link_libraries(vge PRIVATE cglm m stb Vulkan::Vulkan)

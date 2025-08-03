@@ -171,22 +171,28 @@ void vgeHandleEvents() {
 		vgeEventInfo info = windowGlobalContext->windowEvents.events[i];
 		switch (info.eventId) {
 			case WINDOW_MOUSE_MOVE:
+				printf("mouse");
 				pVgeMouseMoveInfo infoEventMouseMove = info.data;
 				if (info.window->mouseMoveCallback != nullptr) {
+					printf("mouse:%d|%d\n", infoEventMouseMove->x, infoEventMouseMove->y);
 					info.window->mouseMoveCallback(info.window ,infoEventMouseMove->x, infoEventMouseMove->y);
 				}
 				free(infoEventMouseMove);
 				break;
 			case WINDOW_MOUSE_CLICK_LEFT:
+				printf("mouse Click");
 				pVgeMouseClickLeftInfo infoEventClickLeft = info.data;
 				if (info.window->mouseLeftDownCallback != nullptr) {
+					printf("mouse click:%d|%d\n", infoEventClickLeft->x, infoEventClickLeft->y);
 					info.window->mouseLeftDownCallback(info.window ,infoEventClickLeft->x, infoEventClickLeft->y);
 				}
 				free(infoEventClickLeft);
 				break;
 			case WINDOW_RESIZE:
+				printf("resize\n");
 				pVgeWindowResizeInfo infoEventWindowResize = info.data;
 				if (info.window->resizeCallback != nullptr) {
+					printf("resize:%d|%d\n", infoEventWindowResize->x, infoEventWindowResize->y);
 					info.window->resizeCallback(info.window ,infoEventWindowResize->x, infoEventWindowResize->y);
 				}
 				free(infoEventWindowResize);
@@ -224,8 +230,6 @@ LRESULT CALLBACK vgeWindowsWProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	}
 
 	uint64_t eventNum;
-	pVgeEventInfo event;
-	pVgeMouseMoveInfo eventData;
 	switch (uMsg) {
 		case WM_MOUSEMOVE:
 			vgeMutexLock(&windowGlobalContext->windowEvents.mutex);
@@ -237,15 +241,15 @@ LRESULT CALLBACK vgeWindowsWProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 			eventNum = windowGlobalContext->windowEvents.numEvents;
 			windowGlobalContext->windowEvents.numEvents++;
 
-			event = &windowGlobalContext->windowEvents.events[eventNum];
-			event->window = window;
-			event->eventId = WINDOW_MOUSE_MOVE;
+			pVgeEventInfo eventMouseMove = &windowGlobalContext->windowEvents.events[eventNum];
+			eventMouseMove->window = window;
+			eventMouseMove->eventId = WINDOW_MOUSE_MOVE;
 
-			eventData = malloc(sizeof(vgeMouseMoveInfo));
-			eventData->x = GET_X_LPARAM(lParam);
-			eventData->y = GET_Y_LPARAM(lParam);
+			pVgeMouseMoveInfo eventDataMouseMove = malloc(sizeof(vgeMouseMoveInfo));
+			eventDataMouseMove->x = GET_X_LPARAM(lParam);
+			eventDataMouseMove->y = GET_Y_LPARAM(lParam);
 
-			event->data = eventData;
+			eventMouseMove->data = eventDataMouseMove;
 
 			vgeMutexUnlock(&windowGlobalContext->windowEvents.mutex);
 			break;
@@ -259,15 +263,15 @@ LRESULT CALLBACK vgeWindowsWProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 			eventNum = windowGlobalContext->windowEvents.numEvents;
 			windowGlobalContext->windowEvents.numEvents++;
 
-			event = &windowGlobalContext->windowEvents.events[eventNum];
-			event->window = window;
-			event->eventId = WINDOW_MOUSE_CLICK_LEFT;
+			pVgeEventInfo eventMouseLeftDown = &windowGlobalContext->windowEvents.events[eventNum];
+			eventMouseLeftDown->window = window;
+			eventMouseLeftDown->eventId = WINDOW_MOUSE_CLICK_LEFT;
 
-			eventData = malloc(sizeof(vgeMouseMoveInfo));
-			eventData->x = GET_X_LPARAM(lParam);
-			eventData->y = GET_Y_LPARAM(lParam);
+			pVgeMouseClickLeftInfo eventDataMouseClickLeft = malloc(sizeof(vgeMouseClickLeftInfo));
+			eventDataMouseClickLeft->x = GET_X_LPARAM(lParam);
+			eventDataMouseClickLeft->y = GET_Y_LPARAM(lParam);
 
-			event->data = eventData;
+			eventMouseLeftDown->data = eventDataMouseClickLeft;
 
 			vgeMutexUnlock(&windowGlobalContext->windowEvents.mutex);
 			break;
@@ -289,15 +293,15 @@ LRESULT CALLBACK vgeWindowsWProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			RECT *sizingRect = (RECT *)lParam;
 
-			event = &windowGlobalContext->windowEvents.events[eventNum];
-			event->window = window;
-			event->eventId = WINDOW_RESIZE;
+			pVgeEventInfo eventWindowResize = &windowGlobalContext->windowEvents.events[eventNum];
+			eventWindowResize->window = window;
+			eventWindowResize->eventId = WINDOW_RESIZE;
 
-			eventData = malloc(sizeof(vgeMouseMoveInfo));
+			pVgeWindowResizeInfo eventData = malloc(sizeof(vgeWindowResizeInfo));
 			eventData->x = sizingRect->right - sizingRect->left;
 			eventData->y = sizingRect->bottom - sizingRect->top;
 
-			event->data = eventData;
+			eventWindowResize->data = eventData;
 
 			windowGlobalContext->windowEvents.numEvents++;
 
