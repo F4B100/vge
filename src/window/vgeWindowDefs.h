@@ -74,6 +74,7 @@ typedef struct VgeGlobalContext_t {
 
 #include <wayland-client.h>
 #include <wayland-client-protocol.h>
+#include "xdg-shell-client-protocol.h"
 
 typedef struct wl_display wlDisplay,* pWlDisplay;
 typedef struct wl_registry wlRegistry ,* pWlRegistry;
@@ -88,7 +89,16 @@ typedef struct xdg_toplevel xdgTopLevel,* pXdgToplevel;
 typedef struct xdg_wm_base xdgWmBase,* pXdgWmBase;
 
 typedef struct VgeWindow {
+    uint32_t state;
+    pWlDisplay display;
+    pWlRegistry registry;
     pWlCompositor compositor;
+    pWlShm shm;
+    pWlShmPool shm_pool;
+    pXdgWmBase xdg_wm_base;
+    pWlSurface surface;
+    pXdgSurface xdg_surface;
+    pXdgToplevel xdg_toplevel;
 
 	void (*mouseMoveCallback)(struct VgeWindow *window, uint32_t x, uint32_t y);
 	void (*mouseLeftDownCallback)(struct VgeWindow *window, uint32_t x, uint32_t y);
