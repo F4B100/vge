@@ -29,7 +29,7 @@ foreach (bisonFile ${BISON_FILES})
 	)
 
 	execute_process(
-			COMMAND ${BISON} --output=${OUT_BISON_SOURCE} --header=${OUT_BISON_HEADER} ${FILE_NAME}
+			COMMAND ${BISON} -Wcounterexamples --output=${OUT_BISON_SOURCE} --header=${OUT_BISON_HEADER} ${FILE_NAME}
 			WORKING_DIRECTORY ${BISON_DIR}
 	)
 

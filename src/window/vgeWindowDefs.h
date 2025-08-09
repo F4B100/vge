@@ -31,21 +31,6 @@ typedef struct VgeWindowResizeInfo {
 #define WINDOW_RESIZE 0x00000011
 typedef uint32_t vgeEventID;
 
-typedef struct VgeEventInfo {
-	vgeEventID eventId;
-	pVgeWindow window;
-	void *data;
-} vgeEventInfo, *pVgeEventInfo;
-
-#define MAX_EVENTS 10000
-
-typedef struct VgeSharedEventList {
-	vgeMutex mutex;
-	vgeCond isFull;
-	uint64_t numEvents;
-	vgeEventInfo events[MAX_EVENTS];
-} vgeSharedEventList, *pVgeSharedEventList;
-
 #ifdef VGE_PLATFORM_WIN32
 #define UNICODE
 #define _UNICODE
@@ -60,6 +45,21 @@ typedef struct VgeWindow_t {
 	void (*mouseLeftDownCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
 	void (*resizeCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
 } vgeWindow, *pVgeWindow;
+
+typedef struct VgeEventInfo {
+	vgeEventID eventId;
+	pVgeWindow window;
+	void *data;
+} vgeEventInfo, *pVgeEventInfo;
+
+#define MAX_EVENTS 10000
+
+typedef struct VgeSharedEventList {
+	vgeMutex mutex;
+	vgeCond isFull;
+	uint64_t numEvents;
+	vgeEventInfo events[MAX_EVENTS];
+} vgeSharedEventList, *pVgeSharedEventList;
 
 typedef struct VgeGlobalContext_t {
     wchar_t *windowClassName;

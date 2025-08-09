@@ -1,5 +1,6 @@
 %code requires {
     #include "objParser.h"
+    #define yylex objlex
     typedef void* yyscan_t;
 }
 
@@ -24,69 +25,66 @@
     typedef void* yyscan_t;
     void objerror(parserContext *context, yyscan_t scanner, const char *err);
     int yywrap(void);
-
     #define yylex objlex
-    extern int yylex (YYSTYPE * yylval_param , yyscan_t yyscanner);
 %}
 
-%token OBJECT_NAME VERTEX_NORMAL VERTEX_TEXTURE VERTEX SHADING USE_MATERIAL MTL_NAME FACE
+%token OBJECT_NAME VERTEX_NORMAL VERTEX_TEXTURE VERTEX SHADING USE_MATERIAL MTL_NAME FACE SLASH
 %token <f> FLOAT
 %token <path> MTL_PATH
 %token <str> STRING
 %token <i> INTEGER
 
-%start input
+%start line
 
 %%
 
-input: /* EMPTY */
-    |line '\n' input
-;
-
 line:
-    | VERTEX FLOAT FLOAT FLOAT
+    | VERTEX FLOAT FLOAT FLOAT line
     {
         printf("vertex: %f %f %f\n", $2, $3, $4);
     }
-    | VERTEX_NORMAL FLOAT FLOAT FLOAT
+    | VERTEX_NORMAL FLOAT FLOAT FLOAT line
     {
         printf("vertex Normal: %f %f %f\n", $2, $3, $4);
     }
-    | VERTEX_TEXTURE FLOAT FLOAT
+    | VERTEX_TEXTURE FLOAT FLOAT line
     {
         printf("vertex Texture: %f %f\n", $2, $3);
     }
-    | OBJECT_NAME STRING
+    | OBJECT_NAME STRING line
     {
         printf("object name: %s\n", $2);
     }
-    | MTL_NAME MTL_PATH
+    | MTL_NAME MTL_PATH line
     {
         printf("material name: %s\n", $2);
     }
-    | USE_MATERIAL MTL_PATH
+    | USE_MATERIAL MTL_PATH line
     {
         printf("use material: %s\n", $2);
     }
-    | SHADING INTEGER
+    | SHADING INTEGER line
     {
         printf("Shading: %d\n", $2);
     }
-    | USE_MATERIAL STRING
+    | USE_MATERIAL STRING line
     {
         printf("usemtl: %s\n", $2);
     }
-    | FACE face face face
+    | FACE indices indices indices indices line
+    {
+        printf("\n");
+    }
 ;
 
-face:
-    INTEGER '/' INTEGER '/' INTEGER
+indices:
+    INTEGER SLASH INTEGER SLASH INTEGER
     {
-        printf("%d/%d/%d\n", $1, $3, $5);
+        printf("%d/%d/%d ", $1, $3, $5);
     }
-    |INTEGER '/' '/' INTEGER
+    |INTEGER SLASH SLASH INTEGER
     {
-        printf("%d//%d\n", $1, $4);
+        printf("%d/%d", $1, $4);
     }
 ;
 
