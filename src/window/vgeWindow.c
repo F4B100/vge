@@ -165,7 +165,7 @@ uint32_t vgeIsWindowClosed(pVgeWindow window) {
 	return window->state == WINDOW_CLOSED;
 }
 
-void vgeHandleEvents() {
+void  vgeHandleEvents() {
 	vgeMutexLock(&windowGlobalContext->windowEvents.mutex);
 	for (int i = 0; i < windowGlobalContext->windowEvents.numEvents; ++i) {
 		vgeEventInfo info = windowGlobalContext->windowEvents.events[i];

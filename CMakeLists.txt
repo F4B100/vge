@@ -5,21 +5,73 @@ set(CMAKE_C_STANDARD 23)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
-# Parser Compile Section --------------------------------------------------------------------------
-find_program(FLEX flex REQUIRED)
-find_program(BISON bison REQUIRED)
-file(GLOB_RECURSE FLEX_FILEX "src/parsers/*.l")
-file(GLOB_RECURSE BISON "src/parsers/*.y")
+include(cmake/CPM.cmake)
 
-foreach (flexFile ${FLEX_FILES})
+# Parser Compile Section --------------------------------------------------------------------------
+find_program(BISON bison REQUIRED)
+file(GLOB_RECURSE BISON_FILES "src/parsers/*.y")
+set(OUT_BISON "")
+foreach (bisonFile ${BISON_FILES})
+	get_filename_component(FILE_NAME_WE ${bisonFile} NAME_WE)
+	get_filename_component(FILE_NAME ${bisonFile} NAME)
+	get_filename_component(BISON_DIR ${bisonFile} DIRECTORY)
+
+	set(OUT_BISON_SOURCE "${FILE_NAME_WE}.tab.c")
+	set(OUT_BISON_HEADER "${FILE_NAME_WE}.tab.h")
+
 	add_custom_command(
-			COMMAND ${FLEX} ${flexFile}
-			DEPENDS ${flexFile}
-			COMMENT "Compiling flex lexer ${flexFile}"
+			OUTPUT ${OUT_BISON_SOURCE};${OUT_BISON_HEADER}
+			COMMAND ${BISON} --output=${OUT_BISON_SOURCE} --header=${OUT_BISON_HEADER} ${FILE_NAME}
+			WORKING_DIRECTORY ${BISON_DIR}
+			DEPENDS ${bisonFile}
+			COMMENT "Creating sources for Bison file: ${bisonFile}"
 			VERBATIM
 	)
+
+	execute_process(
+			COMMAND ${BISON} --output=${OUT_BISON_SOURCE} --header=${OUT_BISON_HEADER} ${FILE_NAME}
+			WORKING_DIRECTORY ${BISON_DIR}
+	)
+
+	list(APPEND OUT_BISON ${OUT_BISON_SOURCE};${OUT_BISON_HEADER})
 endforeach ()
-add_custom_target(CompileParsers ALL DEPENDS ${SPIRV_OUTPUTS})
+message("===================BISON FILES====================")
+message("${OUT_BISON}")
+message("==================================================")
+add_custom_target(GenerateBison ALL DEPENDS ${OUT_BISON})
+
+
+find_program(FLEX flex REQUIRED)
+file(GLOB_RECURSE FLEX_FILES "src/parsers/*.l")
+set(OUT_FLEX "")
+foreach (flexFile ${FLEX_FILES})
+	get_filename_component(FILE_NAME_WE ${flexFile} NAME_WE)
+	get_filename_component(FILE_NAME ${flexFile} NAME)
+	get_filename_component(FLEX_DIR ${flexFile} DIRECTORY)
+
+	set(OUT_FLEX_SOURCE "${FILE_NAME_WE}.c")
+	set(OUT_FLEX_HEADER "${FILE_NAME_WE}.h")
+
+	add_custom_command(
+			OUTPUT ${OUT_FLEX_SOURCE};${OUT_FLEX_HEADER}
+			COMMAND ${FLEX} --outfile=${OUT_FLEX_SOURCE} --header-file=${OUT_FLEX_HEADER} ${FILE_NAME}
+			WORKING_DIRECTORY ${FLEX_DIR}
+			DEPENDS ${flexFile}
+			COMMENT "Creating sources for Flex file: ${flexFile}"
+			VERBATIM
+	)
+
+	execute_process(
+			COMMAND ${FLEX} --outfile=${OUT_FLEX_SOURCE} --header-file=${OUT_FLEX_HEADER} ${FILE_NAME}
+			WORKING_DIRECTORY ${FLEX_DIR}
+	)
+
+	list(APPEND OUT_FLEX ${OUT_FLEX_SOURCE};${OUT_FLEX_HEADER})
+endforeach ()
+message("===================FLEX FILES=====================")
+message("${OUT_FLEX}")
+message("==================================================")
+add_custom_target(GenerateFlex ALL DEPENDS ${OUT_FLEX})
 # -------------------------------------------------------------------------------------------------
 
 # Shaders Compile Section -------------------------------------------------------------------------
@@ -34,7 +86,6 @@ foreach (shader ${SHADERS})
 	get_filename_component(dir ${shader} DIRECTORY)
 
 	set(SPIRV "${CMAKE_HOME_DIRECTORY}/shaders_bin/${FILE_NAME}.spv")
-	message("${CMAKE_HOME_DIRECTORY}/shaders_bin/${FILE_NAME}.spv")
 	list(APPEND SPIRV_OUTPUTS ${SPIRV})
 
 	add_custom_command(
@@ -46,11 +97,14 @@ foreach (shader ${SHADERS})
 	)
 endforeach()
 
+message("===================SPIRV FILES====================")
+message("${SPIRV_OUTPUTS}")
+message("==================================================")
+
 add_custom_target(CompileShaders ALL DEPENDS ${SPIRV_OUTPUTS})
 #--------------------------------------------------------------------------------------------------
 
 # External Deps Section ---------------------------------------------------------------------------
-include(cmake/CPM.cmake)
 
 if (WIN32)
 	add_compile_definitions(VGE_OS_WINDOWS)
@@ -88,10 +142,15 @@ endif ()
 
 # Add Deps Section --------------------------------------------------------------------------------
 file(GLOB_RECURSE SRC_FILES "src/*.c" "src/*.h" "src/*.s")
+
+message("===================SOURCE FILES===================")
+message("${SRC_FILES}")
+message("==================================================")
+
 add_executable(vge main.c ${SRC_FILES})
 
 IF (WIN32)
-	target_link_options(vge PRIVATE -static -static-libgcc -static-libstdc++ -lwinpthread)
+	target_link_options(vge PRIVATE -static -static-libgcc -lwinpthread)
 ENDIF ()
 
 IF (LINUX)
@@ -101,4 +160,6 @@ ENDIF ()
 target_link_libraries(vge PRIVATE cglm m stb Vulkan::Vulkan)
 target_include_directories(stb INTERFACE ${stb_SOURCE_DIR} ${cglm_SORCE_DIR} ${glfw_INCLUDE_DIR})
 add_dependencies(vge CompileShaders)
+add_dependencies(vge GenerateBison)
+add_dependencies(vge GenerateFlex)
 # -------------------------------------------------------------------------------------------------
