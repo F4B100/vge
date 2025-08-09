@@ -396,12 +396,10 @@ uint8_t physicalDeviceSupportsPresentation(VkPhysicalDevice physicalDevice, uint
 #elifdef VGE_PLATFORM_WAYLAND
 
 vgeGlobalContext context = {
-	.numWindows = 0,
-	.windows = nullptr
+	vge
 };
 
 void vgeInit() {
-	glfwInit();
 }
 
 pVgeWindow vgeWindowInit(int32_t width, int32_t height, char *title) {

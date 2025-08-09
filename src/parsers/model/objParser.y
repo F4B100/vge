@@ -3,6 +3,13 @@
     typedef void* yyscan_t;
 }
 
+%union {
+    char *path;
+    char *str;
+    float f;
+    int i;
+}
+
 %define api.pure full
 %define api.prefix {obj}
 %define parse.error verbose
@@ -19,14 +26,8 @@
     int yywrap(void);
 
     #define yylex objlex
+    extern int yylex (YYSTYPE * yylval_param , yyscan_t yyscanner);
 %}
-
-%union {
-    char *path;
-    char *str;
-    float f;
-    int i;
-}
 
 %token OBJECT_NAME VERTEX_NORMAL VERTEX_TEXTURE VERTEX SHADING USE_MATERIAL MTL_NAME FACE
 %token <f> FLOAT

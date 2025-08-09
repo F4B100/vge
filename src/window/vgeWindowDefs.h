@@ -6,12 +6,6 @@
 #define VGEWINDOWDEFS_H
 
 #include <stdint.h>
-
-#ifdef VGE_PLATFORM_WIN32
-#define UNICODE
-#define _UNICODE
-#include <windows.h>
-#include <windowsx.h>
 #include "../utils/vgeThread.h"
 
 // window State
@@ -37,15 +31,6 @@ typedef struct VgeWindowResizeInfo {
 #define WINDOW_RESIZE 0x00000011
 typedef uint32_t vgeEventID;
 
-typedef struct VgeWindow_t {
-	HWND hWindow;
-	uint32_t state;
-	vgeThread thread;
-	void (*mouseMoveCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
-	void (*mouseLeftDownCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
-	void (*resizeCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
-} vgeWindow, *pVgeWindow;
-
 typedef struct VgeEventInfo {
 	vgeEventID eventId;
 	pVgeWindow window;
@@ -60,6 +45,21 @@ typedef struct VgeSharedEventList {
 	uint64_t numEvents;
 	vgeEventInfo events[MAX_EVENTS];
 } vgeSharedEventList, *pVgeSharedEventList;
+
+#ifdef VGE_PLATFORM_WIN32
+#define UNICODE
+#define _UNICODE
+#include <windows.h>
+#include <windowsx.h>
+
+typedef struct VgeWindow_t {
+	HWND hWindow;
+	uint32_t state;
+	vgeThread thread;
+	void (*mouseMoveCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
+	void (*mouseLeftDownCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
+	void (*resizeCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
+} vgeWindow, *pVgeWindow;
 
 typedef struct VgeGlobalContext_t {
     wchar_t *windowClassName;
