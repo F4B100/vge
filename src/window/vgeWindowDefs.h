@@ -90,31 +90,44 @@ typedef struct xdg_wm_base xdgWmBase,* pXdgWmBase;
 
 typedef struct VgeWindow {
     uint32_t state;
-    pWlDisplay display;
-    pWlRegistry registry;
-    pWlCompositor compositor;
     pWlShm shm;
     pWlShmPool shm_pool;
     pXdgWmBase xdg_wm_base;
     pWlSurface surface;
     pXdgSurface xdg_surface;
     pXdgToplevel xdg_toplevel;
+	pVgeThread thread;
 
 	void (*mouseMoveCallback)(struct VgeWindow *window, uint32_t x, uint32_t y);
 	void (*mouseLeftDownCallback)(struct VgeWindow *window, uint32_t x, uint32_t y);
 	void (*resizeCallback)(struct VgeWindow *window, uint32_t x, uint32_t y);
 } vgeWindow, *pVgeWindow;
 
+typedef struct VgeEventInfo {
+	vgeEventID eventId;
+	pVgeWindow window;
+	void *data;
+} vgeEventInfo, *pVgeEventInfo;
+
+#define MAX_EVENTS 10000
+
+typedef struct VgeSharedEventList {
+	vgeMutex mutex;
+	vgeCond isFull;
+	uint64_t numEvents;
+	vgeEventInfo events[MAX_EVENTS];
+} vgeSharedEventList, *pVgeSharedEventList;
+
 typedef struct VgeGlobalContext_t {
-	uint32_t numWindows;
-	pVgeWindow *windows;
+	pWlDisplay display;
+	pWlRegistry registry;
+	pWlCompositor compositor;
+
+	double StartTime;
+
+	vgeSharedEventList windowEvents;
 } vgeGlobalContext, *pVgeGlobalContext;
 
-#else
-#include <GLFW/glfw3.h>
-typedef struct VgeWindow {
-    GLFWwindow* window;
-} vgeWindow;
 #endif
 
 #endif //VGEWINDOWDEFS_H

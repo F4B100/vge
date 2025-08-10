@@ -395,43 +395,90 @@ uint8_t physicalDeviceSupportsPresentation(VkPhysicalDevice physicalDevice, uint
 
 #elifdef VGE_PLATFORM_WAYLAND
 
-vgeGlobalContext context = {
-	vge
-};
+pVgeGlobalContext windowGlobalContext;
 
 void vgeInit() {
+	windowGlobalContext = malloc(sizeof(vgeGlobalContext));
+
+	windowGlobalContext->display = wl_display_connect(NULL);
+	if (!windowGlobalContext->display) {
+		printf("Failed to connect to the Wayland display\n");
+		return ;
+	}
+
+	windowGlobalContext->registry = wl_display_get_registry(windowGlobalContext->display);
+	wl_registry_add_listener(windowGlobalContext->registry, &registry_listener, window);
+	wl_display_roundtrip(windowGlobalContext->display);
+
+	windowGlobalContext->StartTime = vgeGetTimeSinceStart();
 }
 
 pVgeWindow vgeWindowInit(int32_t width, int32_t height, char *title) {
-	printf("%p\n", context.windows);
-	context.windows = realloc(context.windows, (context.numWindows + 1) * sizeof(pVgeWindow));
-
-	printf("%p\n", context.windows);
-
-	context.windows[context.numWindows]->window = glfwCreateWindow(width, height, title, nullptr, nullptr);
-	glfwShowWindow(context.windows[context.numWindows]->window);
-	context.numWindows++;
-	return context.windows[context.numWindows - 1];
+	return nullptr;
 }
 
 void vgeGetWindowName(pVgeWindow window, char **name) {
-	*name = (char *) glfwGetWindowTitle(window->window);
+
 }
 
 double vgeGetTimeSinceStart() {
-	return glfwGetTime();
+	clock_t time = clock();
+	struct timespec *tp = nullptr;
+	if (clock_gettime(time, tp)) {
+		printf("couldnt get timespec\n");
+	}
+
+	return tp->tv_sec * 1000000000 + tp->tv_nsec / 1000000000.0f;
 }
 
 uint32_t vgeIsWindowClosed(pVgeWindow window) {
-	return glfwWindowShouldClose(window->window);
+	return window->state == WINDOW_CLOSED;
 }
 
-void vgeHandleEvents() {
-	glfwPollEvents();
+void  vgeHandleEvents() {
+	vgeMutexLock(&windowGlobalContext->windowEvents.mutex);
+	for (int i = 0; i < windowGlobalContext->windowEvents.numEvents; ++i) {
+		vgeEventInfo info = windowGlobalContext->windowEvents.events[i];
+		switch (info.eventId) {
+			case WINDOW_MOUSE_MOVE:
+				printf("mouse");
+				pVgeMouseMoveInfo infoEventMouseMove = info.data;
+				if (info.window->mouseMoveCallback != nullptr) {
+					printf("mouse:%d|%d\n", infoEventMouseMove->x, infoEventMouseMove->y);
+					info.window->mouseMoveCallback(info.window ,infoEventMouseMove->x, infoEventMouseMove->y);
+				}
+				free(infoEventMouseMove);
+				break;
+			case WINDOW_MOUSE_CLICK_LEFT:
+				printf("mouse Click");
+				pVgeMouseClickLeftInfo infoEventClickLeft = info.data;
+				if (info.window->mouseLeftDownCallback != nullptr) {
+					printf("mouse click:%d|%d\n", infoEventClickLeft->x, infoEventClickLeft->y);
+					info.window->mouseLeftDownCallback(info.window ,infoEventClickLeft->x, infoEventClickLeft->y);
+				}
+				free(infoEventClickLeft);
+				break;
+			case WINDOW_RESIZE:
+				printf("resize\n");
+				pVgeWindowResizeInfo infoEventWindowResize = info.data;
+				if (info.window->resizeCallback != nullptr) {
+					printf("resize:%d|%d\n", infoEventWindowResize->x, infoEventWindowResize->y);
+					info.window->resizeCallback(info.window ,infoEventWindowResize->x, infoEventWindowResize->y);
+				}
+				free(infoEventWindowResize);
+				break;
+			default:
+				break;
+		}
+	}
+
+	windowGlobalContext->windowEvents.numEvents = 0;
+	vgeCondSignal(&windowGlobalContext->windowEvents.isFull);
+	vgeMutexUnlock(&windowGlobalContext->windowEvents.mutex);
 }
 
 void vgeGetContentSize(pVgeWindow window, uint32_t *width, uint32_t *height) {
-	glfwGetWindowSize(window->window, width, height);
+	return;
 }
 
 #ifdef VGE_GRAPHICS_VULKAN
@@ -460,34 +507,24 @@ const char **vgeGetVulkanExtensions(uint32_t *numExtensions, uint32_t numExtra, 
 	return (const char **)extensions;
 }
 
-void vgeCreateVulkanWindowSurface(vgeWindow *window, VkInstance instance,VkSurfaceKHR *toCreate) {
-	glfwCreateWindowSurface(instance, window->window, nullptr, toCreate);
+void vgeCreateVulkanWindowSurface(vgeWindow *window, VkInstance instance, VkSurfaceKHR *toCreate) {
+	VkWaylandSurfaceCreateInfoKHR createInfo = {
+		.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR,
+		.display = windowGlobalContext->display,
+		.surface = window->surface,
+		.flags = 0,
+		.pNext = nullptr
+	};
+	vkCreateWaylandSurfaceKHR(instance, &createInfo, nullptr, toCreate);
 }
 
 uint8_t physicalDeviceSupportsPresentation(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex) {
-	const VkBool32 presentSupport = vkGetPhysicalDeviceWaylandPresentationSupportKHR(physicalDevice, queueFamilyIndex, glfwGetWaylandDisplay());
+	const VkBool32 presentSupport = vkGetPhysicalDeviceWaylandPresentationSupportKHR(physicalDevice, queueFamilyIndex, windowGlobalContext->display);
 
 	return presentSupport == VK_TRUE;
 }
 
 #endif
-
-#else
-
-void vgeInit() {
-
-}
-
-vgeWindow * vgeWindowInit(const int32_t width, const int32_t height, const int8_t *title, GLFWmonitor *monitor, GLFWwindow *share) {
-vgeWindow *window = calloc(1, sizeof(vgeWindow));
-if (window == NULL) {
-return NULL;
-}
-window->window = NULL;
-window->window = glfwCreateWindow(width, height, title, monitor, share);
-glfwShowWindow(window->window);
-return window;
-}
 
 #endif
 

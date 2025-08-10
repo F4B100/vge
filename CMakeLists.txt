@@ -154,11 +154,11 @@ IF (WIN32)
 ENDIF ()
 
 IF (LINUX)
-
+	target_link_options(vge PRIVATE -lwayland-client)
 ENDIF ()
 
 target_link_libraries(vge PRIVATE cglm m stb Vulkan::Vulkan)
-target_include_directories(stb INTERFACE ${stb_SOURCE_DIR} ${cglm_SORCE_DIR} ${glfw_INCLUDE_DIR})
+target_include_directories(stb INTERFACE ${stb_SOURCE_DIR} ${cglm_SORCE_DIR})
 add_dependencies(vge CompileShaders)
 add_dependencies(vge GenerateBison)
 add_dependencies(vge GenerateFlex)

@@ -26,6 +26,7 @@
     void objerror(parserContext *context, yyscan_t scanner, const char *err);
     int yywrap(void);
     #define yylex objlex
+    extern int yylex(YYSTYPE * yylval_param , yyscan_t yyscanner);
 %}
 
 %token OBJECT_NAME VERTEX_NORMAL VERTEX_TEXTURE VERTEX SHADING USE_MATERIAL MTL_NAME FACE SLASH
@@ -34,44 +35,48 @@
 %token <str> STRING
 %token <i> INTEGER
 
-%start line
+%start input
 
 %%
 
+input:
+    |line input
+    ;
+
 line:
-    | VERTEX FLOAT FLOAT FLOAT line
+    VERTEX FLOAT FLOAT FLOAT
     {
         printf("vertex: %f %f %f\n", $2, $3, $4);
     }
-    | VERTEX_NORMAL FLOAT FLOAT FLOAT line
+    | VERTEX_NORMAL FLOAT FLOAT FLOAT
     {
         printf("vertex Normal: %f %f %f\n", $2, $3, $4);
     }
-    | VERTEX_TEXTURE FLOAT FLOAT line
+    | VERTEX_TEXTURE FLOAT FLOAT
     {
         printf("vertex Texture: %f %f\n", $2, $3);
     }
-    | OBJECT_NAME STRING line
+    | OBJECT_NAME STRING
     {
         printf("object name: %s\n", $2);
     }
-    | MTL_NAME MTL_PATH line
+    | MTL_NAME MTL_PATH
     {
         printf("material name: %s\n", $2);
     }
-    | USE_MATERIAL MTL_PATH line
+    | USE_MATERIAL MTL_PATH
     {
         printf("use material: %s\n", $2);
     }
-    | SHADING INTEGER line
+    | SHADING INTEGER
     {
         printf("Shading: %d\n", $2);
     }
-    | USE_MATERIAL STRING line
+    | USE_MATERIAL STRING
     {
         printf("usemtl: %s\n", $2);
     }
-    | FACE indices indices indices indices line
+    | FACE indices indices indices indices
     {
         printf("\n");
     }
