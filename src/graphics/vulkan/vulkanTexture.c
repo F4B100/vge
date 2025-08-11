@@ -169,7 +169,6 @@ void initSampler(pVulkanContext context, pVgeVulkanTexture texture) {
 pVgeVulkanTexture createVgeVulkanTexture(pVulkanContext context, const char *path) {
 	pVgeVulkanTexture texture = calloc(sizeof(pVgeVulkanTexture), 1);
 	int texWidth, texHeight;
-	stbi_set_flip_vertically_on_load(1);
 	stbi_uc* pixels = stbi_load(path, &texWidth, &texHeight, nullptr, STBI_rgb_alpha);
 	VkDeviceSize imageSize = texWidth * texHeight;
 

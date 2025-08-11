@@ -202,7 +202,7 @@ VkVertexInputAttributeDescription *getAttributeDescription2D() {
     attributeDescription[2].location = 2;
     attributeDescription[2].binding = 0;
     attributeDescription[2].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescription[2].offset = sizeof(float) * 4;
+    attributeDescription[2].offset = sizeof(float) * 5;
     return attributeDescription;
 }
 VkVertexInputAttributeDescription *getAttributeDescription3D() {
@@ -313,11 +313,11 @@ vgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info)
 
     VkPipelineRasterizationStateCreateInfo rasterizer = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-        .depthClampEnable = VK_FALSE,
+        .depthClampEnable = VK_TRUE,
         .rasterizerDiscardEnable = VK_FALSE,
         .polygonMode = VK_POLYGON_MODE_FILL,
-        .lineWidth = 1.0f,
-        .cullMode = VK_CULL_MODE_BACK_BIT,
+        .lineWidth = 2.0f,
+        .cullMode = VK_CULL_MODE_NONE,
         .frontFace = VK_FRONT_FACE_CLOCKWISE,
         .depthBiasEnable = VK_FALSE,
         .depthBiasConstantFactor = 0.0f,

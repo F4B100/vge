@@ -9,9 +9,6 @@
 #include <string.h>
 
 #ifdef VGE_PLATFORM_WIN32
-#include <stdio.h>
-#include <string.h>
-#include <vulkan/vulkan_win32.h>
 
 pVgeGlobalContext windowGlobalContext;
 
@@ -33,7 +30,7 @@ void vgeInit() {
 		windowGlobalContext->menuName[i] = MENU_NAME[i];
 	}
 
-	WNDCLASSEX wc = {};
+	WNDCLASSEXW wc = {};
 	wc.cbSize = sizeof(wc);
 	wc.hInstance = windowGlobalContext->hInstance;
 	wc.lpfnWndProc = WINDOW_PROCEDURE;
@@ -42,7 +39,7 @@ void vgeInit() {
 	wc.hCursor = LoadCursor(windowGlobalContext->hInstance, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 
-	RegisterClassEx(&wc);
+	RegisterClassExW(&wc);
 
 	vgeSetStartTime();
 
@@ -98,7 +95,7 @@ void *vgeWindowThreadFunc(void *arg) {
 	}
 	windowName[nameLen] = L'\0';
 
-	window->hWindow = CreateWindowEx(
+	window->hWindow = CreateWindowExW(
 		0,
 		windowGlobalContext->windowClassName,
 		windowName,
@@ -114,7 +111,7 @@ void *vgeWindowThreadFunc(void *arg) {
 	);
 
 	if (window->hWindow == NULL) {
-		MessageBox(nullptr, WINDOW_CREATE_FAIL_MESSAGE, windowName, 0);
+		MessageBoxW(nullptr, WINDOW_CREATE_FAIL_MESSAGE, windowName, 0);
 		return nullptr;
 	}
 
@@ -318,7 +315,7 @@ void vgeGetWindowName(pVgeWindow window, char **name) {
 		return;
 	int32_t length = GetWindowTextLength(window->hWindow);
 	LPWSTR str = malloc(sizeof(WCHAR) * (length + 1));
-	GetWindowText(window->hWindow, str, length + 1);
+	GetWindowTextW(window->hWindow, str, length + 1);
 
 
 	int32_t size = WideCharToMultiByte(
@@ -350,6 +347,7 @@ void vgeGetWindowName(pVgeWindow window, char **name) {
 #ifdef VGE_GRAPHICS_VULKAN
 
 #define NUM_REQUIRED_VGE_EXTENSIONS 3
+#include <vulkan/vulkan_win32.h>
 char *vgeExtensions[] = {
 	VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
 	VK_KHR_SURFACE_EXTENSION_NAME,

@@ -29,11 +29,10 @@ typedef struct VgeWindowResizeInfo {
 	uint32_t y;
 } vgeWindowResizeInfo, *pVgeWindowResizeInfo;
 #define WINDOW_RESIZE 0x00000011
+#define UNICODE
 typedef uint32_t vgeEventID;
 
 #ifdef VGE_PLATFORM_WIN32
-#define UNICODE
-#define _UNICODE
 #include <windows.h>
 #include <windowsx.h>
 
