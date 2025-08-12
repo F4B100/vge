@@ -14,19 +14,19 @@
 
 // event Defs
 typedef struct VgeMouseMoveInfo {
-	uint32_t x;
-	uint32_t y;
+	int32_t x;
+	int32_t y;
 } vgeMouseMoveInfo, *pVgeMouseMoveInfo;
 #define WINDOW_MOUSE_MOVE 0x00000001
 typedef struct VgeMouseClickLeftInfo {
-	uint32_t x;
-	uint32_t y;
+	int32_t x;
+	int32_t y;
 } vgeMouseClickLeftInfo, *pVgeMouseClickLeftInfo;
 #define WINDOW_MOUSE_CLICK_LEFT 0x00000002
 
 typedef struct VgeWindowResizeInfo {
-	uint32_t x;
-	uint32_t y;
+	int32_t x;
+	int32_t y;
 } vgeWindowResizeInfo, *pVgeWindowResizeInfo;
 #define WINDOW_RESIZE 0x00000011
 #define UNICODE
@@ -40,9 +40,9 @@ typedef struct VgeWindow_t {
 	HWND hWindow;
 	uint32_t state;
 	vgeThread thread;
-	void (*mouseMoveCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
-	void (*mouseLeftDownCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
-	void (*resizeCallback)(struct VgeWindow_t *window, uint32_t x, uint32_t y);
+	void (*mouseMoveCallback)(struct VgeWindow_t *window, int32_t x, int32_t y);
+	void (*mouseLeftDownCallback)(struct VgeWindow_t *window, int32_t x, int32_t y);
+	void (*resizeCallback)(struct VgeWindow_t *window, int32_t x, int32_t y);
 } vgeWindow, *pVgeWindow;
 
 typedef struct VgeEventInfo {

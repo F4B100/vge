@@ -526,11 +526,11 @@ uint8_t physicalDeviceSupportsPresentation(VkPhysicalDevice physicalDevice, uint
 
 #endif
 
-void vgeSetWindowSizeCallback(pVgeWindow window, void (*func)(pVgeWindow window, uint32_t width, uint32_t height)) {
+void vgeSetWindowSizeCallback(pVgeWindow window, void (*func)(pVgeWindow window, int32_t width, int32_t height)) {
 	window->resizeCallback = func;
 }
 
 
-void vgeSetMouseMoveCallback(pVgeWindow window, void (*func)(pVgeWindow window, uint32_t width, uint32_t height)) {
+void vgeSetMouseMoveCallback(pVgeWindow window, void (*func)(pVgeWindow window, int32_t width, int32_t height)) {
 	window->mouseMoveCallback = func;
 }

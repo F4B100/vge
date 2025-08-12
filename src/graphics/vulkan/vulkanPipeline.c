@@ -221,7 +221,7 @@ VkVertexInputAttributeDescription *getAttributeDescription3D() {
     attributeDescription[2].location = 2;
     attributeDescription[2].binding = 0;
     attributeDescription[2].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescription[2].offset = sizeof(float) * 5;
+    attributeDescription[2].offset = sizeof(float) * 6;
     return attributeDescription;
 }
 

@@ -11,7 +11,7 @@
 
 gameInfo info;
 
-void OnResize(pVgeWindow window, uint32_t width, uint32_t height) {
+void OnResize(pVgeWindow window, int32_t width, int32_t height) {
     if (width == 0 || height == 0) {
         return;
     }
@@ -32,7 +32,42 @@ void OnResize(pVgeWindow window, uint32_t width, uint32_t height) {
         );
 }
 
-void OnMouseMove(pVgeWindow window, uint32_t x, uint32_t y) {
+void OnMouseMove(pVgeWindow window, int32_t x, int32_t y) {
+	uint32_t width, height;
+	vgeGetContentSize(window, &width, &height);
+	float yaw = ((float)x / width) * 3.14159, pitch = ((float)y / height) * 3.14159;
+
+	printf("yaw: %f pitch: %f\n", yaw, pitch);
+
+	mat4 rotation = GLM_MAT4_IDENTITY_INIT;
+
+	vec3 pos = {1.0f, 1.0f, 0.0f};
+
+	glm_translate(rotation, pos);
+
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			printf("%f|", rotation[j][i]);
+		}
+		printf("\n");
+	}
+
+	printf("=========================================\n");
+
+	memcpy(info.model->indexInfo->data, rotation, sizeof(mat4));
+
+	updateUniformsFromModel(info.graphics, info.model);
+
+	vec4 rotation2 = {};
+
+	vec4 pos2 = {0.0f, 0.0f, 0.0f, 1.0f};
+
+	glm_mat4_mulv(rotation, pos2, rotation2);
+
+	for (int i = 0; i < 4; ++i) {
+		printf("%f|", rotation2[i]);
+	}
+	printf("\n");
 }
 
 void GameInit() {

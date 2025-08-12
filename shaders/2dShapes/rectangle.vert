@@ -15,5 +15,5 @@ void main() {
     gl_Position = ubo.ScreenPos * vec4(inPosition, 0.0f, 1.0f);
 
     fragTexCoords = inTexCoords;
-    fragColor = inColor;
+    fragColor = (ubo.ScreenPos * vec4(inPosition, 0.0f, 1.0f)).rgb;
 }
