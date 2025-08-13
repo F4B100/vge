@@ -73,7 +73,7 @@ typedef struct VgeGlobalContext_t {
 
 #include <wayland-client.h>
 #include <wayland-client-protocol.h>
-#include "xdg-shell-client-protocol.h"
+#include "wayland/xdg-shell-client-protocol.h"
 
 typedef struct wl_display wlDisplay,* pWlDisplay;
 typedef struct wl_registry wlRegistry ,* pWlRegistry;

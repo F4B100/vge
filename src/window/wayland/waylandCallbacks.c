@@ -4,8 +4,12 @@
 #ifdef VGE_PLATFORM_WAYLAND
 #include "waylandCallbacks.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <bits/fcntl-linux.h>
+#include <sys/mman.h>
 
 #include "../vgeWindowDefs.h"
 
@@ -21,7 +25,7 @@ void registry_handle_global(void *data, struct wl_registry *registry, uint32_t n
     printf("Wayland global: %s (version %u)\n", interface, version);
     pVgeWindow window = data;
     if (strcmp(interface, wl_compositor_interface.name) == 0) {
-        window->compositor = wl_registry_bind(registry, name, &wl_compositor_interface, version);
+        vgeGlobalContext->compositor = wl_registry_bind(registry, name, &wl_compositor_interface, version);
     }
     else if (strcmp(interface, wl_shm_interface.name) == 0) {
         window->shm = wl_registry_bind(registry, name, &wl_shm_interface, version);
@@ -88,8 +92,8 @@ int32_t allocate_shm_file(size_t size) {
 }
 
 
-struct wl_buffer *draw_frame(caalfagaWindow *window) {
-    int32_t stride = window->width * 4;
+struct wl_buffer *draw_frame(pVgeWindow window) {
+    int32_t stride = window * 4;
     int32_t size = stride * window->height;
 
     int32_t fd = allocate_shm_file(size);

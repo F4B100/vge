@@ -7,6 +7,35 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
 include(cmake/CPM.cmake)
 
+IF (LINUX)
+
+	set(XDG_OUTPUT_HEADER "xdg-shell-client-protocol.h")
+	set(XDG_OUTPUT_SOURCE "xdg-shell-protocol.c")
+
+	set(XDG_OUTPUTS ${XDG_OUTPUT_HEADER};${XDG_OUTPUT_SOURCE})
+
+	add_custom_command(
+			OUTPUT ${XDG_OUTPUTS}
+			COMMAND wayland-scanner client-header /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml ${XDG_OUTPUT_HEADER}
+			COMMAND wayland-scanner private-code /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml ${XDG_OUTPUT_SOURCE}
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/window/wayland
+			COMMENT "Creating xdg sources ${XDG_OUTPUTS}"
+			VERBATIM
+	)
+
+	execute_process(
+			COMMAND wayland-scanner client-header /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml ${XDG_OUTPUT_HEADER}
+			COMMAND wayland-scanner private-code /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml ${XDG_OUTPUT_SOURCE}
+			WORKING_DIRECTORY src/window/wayland
+	)
+
+	add_custom_target(Xdg ALL DEPENDS ${XDG_OUTPUTS})
+
+	message("==============================================")
+	message("${XDG_OUTPUTS}")
+	message("==============================================")
+endif ()
+
 # Parser Compile Section --------------------------------------------------------------------------
 find_program(BISON bison REQUIRED)
 file(GLOB_RECURSE BISON_FILES "src/parsers/*.y")
@@ -162,4 +191,5 @@ target_include_directories(stb INTERFACE ${stb_SOURCE_DIR} ${cglm_SORCE_DIR})
 add_dependencies(vge CompileShaders)
 add_dependencies(vge GenerateBison)
 add_dependencies(vge GenerateFlex)
+add_dependencies(vge Xdg)
 # -------------------------------------------------------------------------------------------------
