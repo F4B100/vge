@@ -7,10 +7,6 @@
 #define YYSTYPE OBJSTYPE
 #include "objLexer.h"
 
-extern int yylex_init(yyscan_t* scanner);
-extern void yyset_in(FILE * _in_str, yyscan_t yyscanner);
-extern int yylex(OBJSTYPE * yylval_param, yyscan_t yyscanner);
-
 pObjModel parseObjFile(char * filename) {
 	pObjModel model = malloc(sizeof(objModel));
 	if (!model) {
@@ -35,7 +31,13 @@ pObjModel parseObjFile(char * filename) {
 
 	parserContext context = {};
 
+	context.model = malloc(sizeof(objModel));
+
 	int result = objparse(&context, scanner);
+
+	if (result) {
+		printf("Error parsing for file: %s\n", filename);
+	}
 
 	objlex_destroy(scanner);
 	fclose(file);
@@ -45,6 +47,8 @@ pObjModel parseObjFile(char * filename) {
 		free(model);
 		return NULL;
 	}
+
+	model = context.model;
 
 	return model;
 }

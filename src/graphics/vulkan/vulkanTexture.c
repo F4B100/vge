@@ -84,9 +84,11 @@ void createImage(pVulkanContext context, uint32_t width, uint32_t height, VkForm
 	VkImageCreateInfo imageInfo = {
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 		.imageType = VK_IMAGE_TYPE_2D,
-		.extent.width = width,
-		.extent.height = height,
-		.extent.depth = 1,
+		.extent = {
+			width,
+			height,
+			1
+		},
 		.mipLevels = 1,
 		.arrayLayers = 1,
 		.format = format,
@@ -149,8 +151,8 @@ void initSampler(pVulkanContext context, pVgeVulkanTexture texture) {
 		.addressModeU = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
 		.addressModeV = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
 		.addressModeW = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
-		.anisotropyEnable = VK_FALSE,
-		.maxAnisotropy = 1.0f,
+		.anisotropyEnable = VK_TRUE,
+		.maxAnisotropy = context->physicalDeviceProperties->maxAnisotropy,
 		.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
 		.compareEnable = VK_FALSE,
 		.compareOp = VK_COMPARE_OP_ALWAYS,
@@ -204,8 +206,12 @@ pVgeVulkanTexture createVgeVulkanTexture(pVulkanContext context, const char *pat
 }
 
 void destroyVulkanTexture(pVulkanContext context, pVgeVulkanTexture texture) {
-	vkDestroySampler(context->device, texture->sampler, nullptr);
-	vkDestroyImageView(context->device, texture->imageView, nullptr);
-	vkFreeMemory(context->device, texture->memory, nullptr);
-	vkDestroyImage(context->device, texture->image, nullptr);
+	if (texture->sampler)
+		vkDestroySampler(context->device, texture->sampler, nullptr);
+	if (texture->imageView)
+		vkDestroyImageView(context->device, texture->imageView, nullptr);
+	if (texture->memory)
+		vkFreeMemory(context->device, texture->memory, nullptr);
+	if (texture->image)
+		vkDestroyImage(context->device, texture->image, nullptr);
 }

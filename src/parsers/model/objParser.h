@@ -9,16 +9,20 @@
 
 typedef struct ObjModel {
 	char *name;
-	uint32_t numVertex;
+	uint64_t numVertex;
 	vec3 *vertex;
-	uint32_t numTexture;
+	uint64_t numTexture;
 	vec2 *texture;
-	uint32_t numNormal;
+	uint64_t numNormal;
 	vec3 *normal;
+	uint64_t numFaces;
+	float *faces;
+	uint64_t numIndices;
+	uint32_t *indices;
 } objModel, *pObjModel;
 
 typedef struct ParserContext {
-	objModel model;
+	pObjModel model;
 } parserContext;
 
 pObjModel parseObjFile(char * filename);

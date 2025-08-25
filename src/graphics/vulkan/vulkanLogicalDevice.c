@@ -20,9 +20,39 @@ void createLogicalDevice(VkPhysicalDevice physicalDevice, queueFamilyIndices *qu
         queueCreateInfo[i].queueFamilyIndex = queueIndices->queueInfoArr[i].queueFamilyIndex;
     }
 
+	VkPhysicalDevice8BitStorageFeatures device8BitStorageFeatures = {
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES_KHR,
+    	.pNext = nullptr,
+    	.uniformAndStorageBuffer8BitAccess = VK_TRUE,
+    	.storageBuffer8BitAccess = VK_TRUE,
+    	.storagePushConstant8 = VK_TRUE
+	};
+
+	VkPhysicalDeviceBufferDeviceAddressFeatures deviceAddressFeatures = {
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+    	.pNext = &device8BitStorageFeatures,
+    	.bufferDeviceAddress = VK_TRUE,
+    	.bufferDeviceAddressCaptureReplay = VK_TRUE,
+    	.bufferDeviceAddressMultiDevice = VK_TRUE
+	};
+
+	VkPhysicalDeviceVulkanMemoryModelFeatures modelFeatures = {
+    	.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES,
+    	.pNext = &deviceAddressFeatures,
+    	.vulkanMemoryModel = VK_TRUE,
+    	.vulkanMemoryModelDeviceScope = VK_TRUE,
+    	.vulkanMemoryModelAvailabilityVisibilityChains = VK_TRUE
+	};
+
+	VkPhysicalDeviceTimelineSemaphoreFeatures timelineFeatures = {
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR,
+    	.pNext = &modelFeatures,
+    	.timelineSemaphore = VK_TRUE
+	};
+
     VkDeviceCreateInfo deviceCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-        .pNext = nullptr,
+        .pNext = &timelineFeatures,
         .flags = 0,
         .queueCreateInfoCount = 2,
         .pQueueCreateInfos = queueCreateInfo,

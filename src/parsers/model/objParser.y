@@ -46,7 +46,7 @@ input:
 line:
     VERTEX FLOAT FLOAT FLOAT
     {
-        printf("vertex: %f %f %f\n", $2, $3, $4);
+
     }
     | VERTEX_NORMAL FLOAT FLOAT FLOAT
     {
@@ -58,7 +58,8 @@ line:
     }
     | OBJECT_NAME STRING
     {
-        printf("object name: %s\n", $2);
+        context->model->name = $2;
+        printf("model name: %s\n", $2);
     }
     | MTL_NAME MTL_PATH
     {

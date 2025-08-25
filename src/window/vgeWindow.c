@@ -129,9 +129,9 @@ void *vgeWindowThreadFunc(void *arg) {
 	 */
 
 	while (window->state != WINDOW_CLOSED) {
-		GetMessage(&message, window->hWindow, 0, 0);
+		GetMessageW(&message, window->hWindow, 0, 0);
 		TranslateMessage(&message);
-		DispatchMessage(&message);
+		DispatchMessageW(&message);
 	}
 	return nullptr;
 }
@@ -165,32 +165,26 @@ uint32_t vgeIsWindowClosed(pVgeWindow window) {
 void  vgeHandleEvents() {
 	vgeMutexLock(&windowGlobalContext->windowEvents.mutex);
 	for (int i = 0; i < windowGlobalContext->windowEvents.numEvents; ++i) {
-		vgeEventInfo info = windowGlobalContext->windowEvents.events[i];
-		switch (info.eventId) {
+		pVgeEventInfo info = &windowGlobalContext->windowEvents.events[i];
+		switch (info->eventId) {
 			case WINDOW_MOUSE_MOVE:
-				printf("mouse");
-				pVgeMouseMoveInfo infoEventMouseMove = info.data;
-				if (info.window->mouseMoveCallback != nullptr) {
-					printf("mouse:%d|%d\n", infoEventMouseMove->x, infoEventMouseMove->y);
-					info.window->mouseMoveCallback(info.window ,infoEventMouseMove->x, infoEventMouseMove->y);
+				pVgeMouseMoveInfo infoEventMouseMove = info->data;
+				if (info->window->mouseMoveCallback) {
+					info->window->mouseMoveCallback(info->window ,infoEventMouseMove->x, infoEventMouseMove->y);
 				}
 				free(infoEventMouseMove);
 				break;
 			case WINDOW_MOUSE_CLICK_LEFT:
-				printf("mouse Click");
-				pVgeMouseClickLeftInfo infoEventClickLeft = info.data;
-				if (info.window->mouseLeftDownCallback != nullptr) {
-					printf("mouse click:%d|%d\n", infoEventClickLeft->x, infoEventClickLeft->y);
-					info.window->mouseLeftDownCallback(info.window ,infoEventClickLeft->x, infoEventClickLeft->y);
+				pVgeMouseClickLeftInfo infoEventClickLeft = info->data;
+				if (info->window->mouseLeftDownCallback) {
+					info->window->mouseLeftDownCallback(info->window ,infoEventClickLeft->x, infoEventClickLeft->y);
 				}
 				free(infoEventClickLeft);
 				break;
 			case WINDOW_RESIZE:
-				printf("resize\n");
-				pVgeWindowResizeInfo infoEventWindowResize = info.data;
-				if (info.window->resizeCallback != nullptr) {
-					printf("resize:%d|%d\n", infoEventWindowResize->x, infoEventWindowResize->y);
-					info.window->resizeCallback(info.window ,infoEventWindowResize->x, infoEventWindowResize->y);
+				pVgeWindowResizeInfo infoEventWindowResize = info->data;
+				if (info->window->resizeCallback) {
+					info->window->resizeCallback(info->window ,infoEventWindowResize->x, infoEventWindowResize->y);
 				}
 				free(infoEventWindowResize);
 				break;

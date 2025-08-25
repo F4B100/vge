@@ -13,6 +13,18 @@ typedef struct SpirVCode {
 	uint32_t *code;
 } spirVCode;
 
+typedef struct VgeVertexInputDescriptor{
+	uint32_t binding;
+	uint32_t location;
+	VkFormat format;
+	uint32_t offset;
+} vgeVertexInputDescriptor, *pVgeVertexInputDescriptor;
+
+typedef struct VgeVertexDescription{
+	uint32_t binding;
+	uint32_t stride;
+} vgeVertexDescription, *pVgeVertexDescription;
+
 typedef struct VgePipelineGraphicsCreateInfo_t {
 	char * vertShaderPath;
 	char * fragShaderPath;
@@ -20,6 +32,10 @@ typedef struct VgePipelineGraphicsCreateInfo_t {
 	VkDevice device;
 	VkFormat colorFormat;
 	VkRenderPass renderPass;
+	uint64_t numVertexDescriptions;
+	pVgeVertexDescription vertexDescriptionInfo;
+	uint64_t numVertexInputDescriptions;
+	pVgeVertexInputDescriptor vertexInputInfo;
 } VgePipelineGraphicsCreateInfo;
 
 typedef struct VgePipelineGraphics_t {

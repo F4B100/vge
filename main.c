@@ -1,8 +1,9 @@
 
 #include "src/game/GameMain.h"
+#include "src/parsers/model/objParser.h"
 
 int main(void) {
-    GameInit();
+	GameInit();
     return 0;
 }
 

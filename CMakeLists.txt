@@ -119,7 +119,7 @@ foreach (shader ${SHADERS})
 
 	add_custom_command(
 			OUTPUT ${SPIRV}
-			COMMAND ${GLSLC} ${shader} -o ${SPIRV}
+			COMMAND ${GLSLC}  ${shader} -o ${SPIRV}
 			DEPENDS ${shader}
 			COMMENT "Compiling shader ${shader} to SPIR-V ${SPIRV}"
 			VERBATIM
@@ -184,6 +184,7 @@ ENDIF ()
 
 IF (LINUX)
 	target_link_options(vge PRIVATE -lwayland-client)
+	add_dependencies(vge Xdg)
 ENDIF ()
 
 target_link_libraries(vge PRIVATE cglm m stb Vulkan::Vulkan)
@@ -191,5 +192,4 @@ target_include_directories(stb INTERFACE ${stb_SOURCE_DIR} ${cglm_SORCE_DIR})
 add_dependencies(vge CompileShaders)
 add_dependencies(vge GenerateBison)
 add_dependencies(vge GenerateFlex)
-add_dependencies(vge Xdg)
 # -------------------------------------------------------------------------------------------------

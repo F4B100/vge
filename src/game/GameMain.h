@@ -8,6 +8,7 @@
 #define VGE_USE_VULKAN
 #include "../graphics/vgeGraphics.h"
 #include "../window/vgeWindow.h"
+#include "../utils/camera.h"
 
 typedef struct GameInfo {
     vgeWindow *window;

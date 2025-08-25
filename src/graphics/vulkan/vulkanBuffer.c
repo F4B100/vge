@@ -115,7 +115,7 @@ pVulkanBuffer createUniformBuffer(vulkanContext *context, uint64_t sizeUniform, 
 		sizeUniform,
 		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-		);
+	);
 
 	void* mappedData;
 	vkMapMemory(context->device, uniformBuffer->bufferMemory, 0, uniformBuffer->size, 0, &mappedData);
@@ -126,9 +126,9 @@ pVulkanBuffer createUniformBuffer(vulkanContext *context, uint64_t sizeUniform, 
 
 }
 
-void updateUniformBuffer(vulkanContext *context, pVulkanBuffer uniformBuffer, void* data) {
+void updateUniformBuffer(vulkanContext *context, pVulkanBuffer uniformBuffer, uint64_t offset, uint64_t size, void* data) {
 	void* mappedData;
-	vkMapMemory(context->device, uniformBuffer->bufferMemory, 0, uniformBuffer->size, 0, &mappedData);
+	vkMapMemory(context->device, uniformBuffer->bufferMemory, offset, size, 0, &mappedData);
 	memcpy(mappedData, data, uniformBuffer->size);
 	vkUnmapMemory(context->device, uniformBuffer->bufferMemory);
 }

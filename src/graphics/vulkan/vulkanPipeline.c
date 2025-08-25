@@ -135,9 +135,9 @@ void createDescriptorSetLayout(VkDevice device, VkDescriptorSetLayout *toCreate)
 	bindings[1].pImmutableSamplers = nullptr;
 
     VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = {
-    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-    .bindingCount = 2,
-    .pBindings = bindings,
+	    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+	    .bindingCount = 2,
+	    .pBindings = bindings
     };
 
     if (vkCreateDescriptorSetLayout(device, &descriptorSetLayoutInfo, nullptr, toCreate) != VK_SUCCESS) {
@@ -162,6 +162,7 @@ void createDescriptorPool(VkDevice device, VkDescriptorPool *toCreate) {
         .poolSizeCount = 2,
         .pPoolSizes = poolSizes,
         .maxSets = 1,
+    	.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT
     };
 
     if (vkCreateDescriptorPool(device, &poolInfo, nullptr, toCreate)) {
@@ -169,60 +170,42 @@ void createDescriptorPool(VkDevice device, VkDescriptorPool *toCreate) {
     }
 }
 
-VkVertexInputBindingDescription *getBindingDescription2D(uint32_t stride) {
-    VkVertexInputBindingDescription *bindingDescription = malloc(sizeof(VkVertexInputBindingDescription));
-    bindingDescription->binding = 0;
-    bindingDescription->stride = stride;
-    bindingDescription->inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+VkPipelineVertexInputStateCreateInfo* getVertexInputInfo(VgePipelineGraphicsCreateInfo *info) {
+	VkPipelineVertexInputStateCreateInfo * vertexInputInfo = malloc(sizeof(VkPipelineVertexInputStateCreateInfo));
+	vertexInputInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	vertexInputInfo->pNext = nullptr;
+	vertexInputInfo->flags = 0;
 
-    return bindingDescription;
+	VkVertexInputBindingDescription *descriptors= malloc(sizeof(VkVertexInputBindingDescription) * info->numVertexDescriptions);
+
+	vertexInputInfo->vertexBindingDescriptionCount = info->numVertexDescriptions;
+	vertexInputInfo->pVertexBindingDescriptions = descriptors;
+	for (int i = 0; i < info->numVertexDescriptions; i++) {
+		descriptors[i].binding = info[i].vertexDescriptionInfo->binding;
+		descriptors[i].stride = info[i].vertexDescriptionInfo->stride;
+		descriptors[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	}
+
+	VkVertexInputAttributeDescription *attributes= malloc(sizeof(VkVertexInputAttributeDescription) * info->numVertexInputDescriptions);
+
+	vertexInputInfo->vertexAttributeDescriptionCount = info->numVertexInputDescriptions;
+	vertexInputInfo->pVertexAttributeDescriptions = attributes;
+
+	for (int i = 0; i < info->numVertexInputDescriptions; i++) {
+		attributes[i].binding = info->vertexInputInfo[i].binding;
+		attributes[i].location = info->vertexInputInfo[i].location;
+		attributes[i].format = info->vertexInputInfo[i].format;
+		attributes[i].offset = info->vertexInputInfo[i].offset;
+	}
+
+
+	return vertexInputInfo;
 }
-VkVertexInputBindingDescription *getBindingDescription3D(uint32_t stride) {
-    VkVertexInputBindingDescription *bindingDescription = malloc(sizeof(VkVertexInputBindingDescription));
-    bindingDescription->binding = 0;
-    bindingDescription->stride = stride;
-    bindingDescription->inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-    return bindingDescription;
-}
 
-VkVertexInputAttributeDescription *getAttributeDescription2D() {
-
-    VkVertexInputAttributeDescription *attributeDescription = malloc(sizeof(VkVertexInputAttributeDescription) * 3);
-
-    attributeDescription[0].location = 0;
-    attributeDescription[0].binding = 0;
-    attributeDescription[0].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescription[0].offset = 0;
-
-    attributeDescription[1].location = 1;
-    attributeDescription[1].binding = 0;
-    attributeDescription[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescription[1].offset = sizeof(float) * 2;
-
-    attributeDescription[2].location = 2;
-    attributeDescription[2].binding = 0;
-    attributeDescription[2].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescription[2].offset = sizeof(float) * 5;
-    return attributeDescription;
-}
-VkVertexInputAttributeDescription *getAttributeDescription3D() {
-    VkVertexInputAttributeDescription *attributeDescription = malloc(sizeof(VkVertexInputAttributeDescription) * 3);
-
-    attributeDescription[0].location = 0;
-    attributeDescription[0].binding = 0;
-    attributeDescription[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescription[0].offset = 0;
-
-    attributeDescription[1].location = 1;
-    attributeDescription[1].binding = 0;
-    attributeDescription[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescription[1].offset = sizeof(float) * 3;
-
-    attributeDescription[2].location = 2;
-    attributeDescription[2].binding = 0;
-    attributeDescription[2].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescription[2].offset = sizeof(float) * 6;
-    return attributeDescription;
+void freeVertexInputStateCreateInfo(VkPipelineVertexInputStateCreateInfo *toFree) {
+	free((void *)toFree->pVertexAttributeDescriptions);
+	free((void *)toFree->pVertexBindingDescriptions);
+	free(toFree);
 }
 
 vgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info) {
@@ -260,17 +243,7 @@ vgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info)
         fragShaderStageInfo
     };
 
-    VkVertexInputBindingDescription *bindingDescriptor = getBindingDescription2D(28);
-
-    VkVertexInputAttributeDescription *attributeDescriptor = getAttributeDescription2D();
-
-    VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-        .vertexBindingDescriptionCount = 1,
-        .pVertexBindingDescriptions = bindingDescriptor,
-        .vertexAttributeDescriptionCount = 3,
-        .pVertexAttributeDescriptions = attributeDescriptor
-    };
+	VkPipelineVertexInputStateCreateInfo *vertexInputInfo = getVertexInputInfo(info);
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
@@ -294,12 +267,13 @@ vgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info)
 
     VkDynamicState dynamicStates[] = {
         VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR
+        VK_DYNAMIC_STATE_SCISSOR,
+    	VK_DYNAMIC_STATE_LINE_WIDTH
     };
 
     VkPipelineDynamicStateCreateInfo dynamicState = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-        .dynamicStateCount = 2,
+        .dynamicStateCount = 3,
         .pDynamicStates = dynamicStates
     };
 
@@ -322,7 +296,7 @@ vgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info)
         .depthBiasEnable = VK_FALSE,
         .depthBiasConstantFactor = 0.0f,
         .depthBiasClamp = 0.0f,
-        .depthBiasSlopeFactor = 0.0f
+        .depthBiasSlopeFactor = 0.0
     };
 
     VkPipelineMultisampleStateCreateInfo multisampling = {
@@ -380,7 +354,7 @@ vgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info)
         .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
         .stageCount = 2,
         .pStages = shaderStages,
-        .pVertexInputState = &vertexInputInfo,
+        .pVertexInputState = vertexInputInfo,
         .pInputAssemblyState = &inputAssembly,
         .pViewportState = &viewportState,
         .pRasterizationState = &rasterizer,
@@ -405,18 +379,20 @@ vgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info)
 	newPipeline->descriptorPool = descriptorPool;
 
 
+	freeVertexInputStateCreateInfo(vertexInputInfo);
     free(codeVert->code);
     free(codeVert);
     free(codeFrag->code);
     free(codeFrag);
-    free(bindingDescriptor);
-    free(attributeDescriptor);
     return newPipeline;
 }
 
 void destroyGraphicsPipeline(VkDevice device, vgePipelineGraphics *pipeline) {
     vkDestroyShaderModule(device, pipeline->fragShaderModule, nullptr);
     vkDestroyShaderModule(device, pipeline->vertShaderModule, nullptr);
+
+	vkDestroyDescriptorPool(device, pipeline->descriptorPool, nullptr);
+	vkDestroyDescriptorSetLayout(device, pipeline->descriptorSetLayout, nullptr);
 
     vkDestroyPipelineLayout(device, pipeline->pipelineLayout, nullptr);
     vkDestroyPipeline(device, pipeline->pipeline, nullptr);

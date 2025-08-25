@@ -12,8 +12,8 @@ layout(binding = 0) uniform UniformBufferObject {
 } ubo;
 
 void main() {
-    gl_Position = ubo.ScreenPos * vec4(inPosition, 0.0f, 1.0f);
+    gl_Position = ubo.ScreenPos * vec4(inPosition, 1.0f, 1.0f);
 
     fragTexCoords = inTexCoords;
-    fragColor = (ubo.ScreenPos * vec4(inPosition, 0.0f, 1.0f)).rgb;
+    fragColor = inColor;
 }

@@ -7,8 +7,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../../cmake-build-debug/_deps/cglm-src/include/cglm/call/cam.h"
-
 gameInfo info;
 
 void OnResize(pVgeWindow window, int32_t width, int32_t height) {
@@ -33,41 +31,6 @@ void OnResize(pVgeWindow window, int32_t width, int32_t height) {
 }
 
 void OnMouseMove(pVgeWindow window, int32_t x, int32_t y) {
-	uint32_t width, height;
-	vgeGetContentSize(window, &width, &height);
-	float yaw = ((float)x / width) * 3.14159, pitch = ((float)y / height) * 3.14159;
-
-	printf("yaw: %f pitch: %f\n", yaw, pitch);
-
-	mat4 rotation = GLM_MAT4_IDENTITY_INIT;
-
-	vec3 pos = {1.0f, 1.0f, 0.0f};
-
-	glm_translate(rotation, pos);
-
-	for (int i = 0; i < 4; ++i) {
-		for (int j = 0; j < 4; ++j) {
-			printf("%f|", rotation[j][i]);
-		}
-		printf("\n");
-	}
-
-	printf("=========================================\n");
-
-	memcpy(info.model->indexInfo->data, rotation, sizeof(mat4));
-
-	updateUniformsFromModel(info.graphics, info.model);
-
-	vec4 rotation2 = {};
-
-	vec4 pos2 = {0.0f, 0.0f, 0.0f, 1.0f};
-
-	glm_mat4_mulv(rotation, pos2, rotation2);
-
-	for (int i = 0; i < 4; ++i) {
-		printf("%f|", rotation2[i]);
-	}
-	printf("\n");
 }
 
 void GameInit() {
@@ -85,13 +48,44 @@ void GameInit() {
 
     info.graphics = context;
 
+	vgeVertexDescription vertexInputDescriptor = {
+		.binding = 0,
+		.stride = 8 * sizeof(float)
+	};
+
+	vgeVertexInputDescriptor vertexInputInfo[3] = {
+		{
+			.binding = 0,
+			.format = VK_FORMAT_R32G32B32_SFLOAT,
+			.offset = 0,
+			.location = 0
+		},
+		{
+			.binding = 0,
+			.format = VK_FORMAT_R32G32B32_SFLOAT,
+			.offset = 3 * sizeof(float),
+			.location = 1
+		},
+		{
+			.binding = 0,
+			.format = VK_FORMAT_R32G32_SFLOAT,
+			.offset = 6 * sizeof(float),
+			.location = 2
+		}
+	};
+
     VgePipelineGraphicsCreateInfo pipelineInfo = {
         .device = context->device,
-        .fragShaderPath = "shaders_bin/rectangle.frag.spv",
-        .vertShaderPath = "shaders_bin/rectangle.vert.spv",
+        .fragShaderPath = "shaders_bin/fragment.frag.spv",
+        .vertShaderPath = "shaders_bin/vertex.vert.spv",
         .colorFormat = VK_FORMAT_R8G8B8A8_SRGB,
         .viewportExtent = context->swapChainExtent,
-        .renderPass = context->renderPass
+        .renderPass = context->renderPass,
+    	.numVertexDescriptions = 1,
+    	.vertexDescriptionInfo = &vertexInputDescriptor,
+    	.numVertexInputDescriptions = 3,
+    	.vertexInputInfo = vertexInputInfo
+
     };
 
     vgePipelineGraphics *pipeline = createGraphicsPipeline(&pipelineInfo);
@@ -148,7 +142,39 @@ void GameLoop(gameInfo *info) {
     };
 
     renderPassStart(&info->frameContext[info->currentFrame], info->graphics->renderPass, info->graphics->swapChainExtent, info->graphics->frameBuffers, &clearColor);
+	mat4 mat = GLM_MAT4_IDENTITY_INIT;
 
+	mat4 *model = mapUniformBindingData(info->graphics, info->model, 0, 0, sizeof(mat4));
+
+	vec3 w = {0.0f, 0.0f, 0.0f};
+	glm_translate(mat, w);
+
+	vec3 up = {1.0f, 1.0f, 1.0f};
+	glm_rotate(mat, vgeGetTimeSinceStart(), up);
+
+	memcpy(model, mat, sizeof(mat));
+	unmapUniformBindingData(info->graphics, info->model, 0);
+
+
+	pVgeCamera camera = vgeCameraCreate(0.0f, 0.0f, 90.0f, 1280.0f / 720.0f, 0.1f, 300.0f);
+
+	vec3 newPos = {0.0f, 0.0f, 1.0f};
+
+	cameraSetPositon(camera, newPos);
+
+	cameraSetRotation(camera, glm_rad(90.0f), glm_rad(180.0f));
+
+	mat4 *view = mapUniformBindingData(info->graphics, info->model, 0, sizeof(mat4), sizeof(mat4));
+
+	memcpy(view, getViewMatrix(camera), sizeof(mat));
+	unmapUniformBindingData(info->graphics, info->model, 0);
+
+	mat4 *perspective = mapUniformBindingData(info->graphics, info->model, 0, 2 * sizeof(mat4), sizeof(mat4));
+
+	memcpy(perspective, getPerspectiveMatrix(camera), sizeof(mat));
+	unmapUniformBindingData(info->graphics, info->model, 0);
+
+	updateUniformBinding(info->graphics, info->model, 0);
 	drawModel(info->graphics, &info->frameContext[info->currentFrame], info->graphicsP, info->model);
 
     renderPassEnd(&info->frameContext[info->currentFrame]);
