@@ -136,6 +136,8 @@ void createDescriptorSetLayout(VkDevice device, VkDescriptorSetLayout *toCreate)
 
     VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = {
 	    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+    	.pNext = nullptr,
+    	.flags = 0,
 	    .bindingCount = 2,
 	    .pBindings = bindings
     };

@@ -50,6 +50,7 @@ line:
     }
     | VERTEX_NORMAL FLOAT FLOAT FLOAT
     {
+
         printf("vertex Normal: %f %f %f\n", $2, $3, $4);
     }
     | VERTEX_TEXTURE FLOAT FLOAT
