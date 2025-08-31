@@ -13,6 +13,7 @@ typedef struct {
 	void *data;
 } *pVgeVector;
 
+#define VGE_VECTOR_CAPACITY_INITIAL 4
 #define VGE_VECTOR_CAPACITY_GROWTH_FACTOR 2.0f
 #define VGE_VECTOR_CAPACITY_SHRINK_FACTOR 0.25f
 
@@ -22,8 +23,8 @@ void *vgeVectorFreeKeepData(pVgeVector *vgeVector);
 
 void vgeVectorAppend(pVgeVector vector, void *data);
 void vgeVectorInsert(pVgeVector vector, void *data, uint64_t index);
-void vgeVectorRemove(uint64_t index);
-void vgeVectorRemoveLast();
+void vgeVectorRemoveLast(pVgeVector vector);
+void vgeVectorRemove(pVgeVector vector, uint64_t index);
 void *vgeVectorGetData(pVgeVector vgeVector);
 void *vgeVectorGetElement(pVgeVector vgeVector, uint64_t index);
 
