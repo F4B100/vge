@@ -4,16 +4,15 @@
 
 #include "vgeVector.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 pVgeVector vgeVectorInit(uint64_t sizeElement) {
-	pVgeVector vgeVector = malloc(sizeof(vgeVector));
+	pVgeVector vgeVector = malloc(sizeof(struct VgeVector));
 	if (!vgeVector) {
 		return NULL;
 	}
-	vgeVector->data = malloc(sizeElement * sizeof(uint32_t) * VGE_VECTOR_CAPACITY_INITIAL);
+	vgeVector->data = malloc(sizeElement * VGE_VECTOR_CAPACITY_INITIAL);
 	vgeVector->capacity = VGE_VECTOR_CAPACITY_INITIAL;
 	vgeVector->sizeElement = sizeElement;
 	vgeVector->numElements = 0;
@@ -46,28 +45,29 @@ void vgeVectorAppend(pVgeVector vector, void *data) {
 	vector->numElements++;
 	if (vector->numElements > vector->capacity) {
 		vector->capacity *= VGE_VECTOR_CAPACITY_GROWTH_FACTOR;
-		printf("vector size:%lld", vector->capacity * vector->sizeElement);
 		vector->data = realloc(vector->data, vector->capacity * vector->sizeElement);
 	}
 	memcpy(vector->data + (vector->numElements - 1) * vector->sizeElement, data, vector->sizeElement);
 }
 
 void vgeVectorInsert(pVgeVector vector, void *data, uint64_t index) {
-	if (!vector || !data || index >= vector->numElements) {
+	if (!vector || !data) {
 		return;
 	}
 
-	if (index == vector->numElements - 1) {
+	if (index >= vector->numElements || !vector->numElements) {
 		vgeVectorAppend(vector, data);
+		return;
 	}
 
 	uint8_t temp[(vector->numElements - index) * vector->sizeElement];
-	memcpy(temp, vector->data + (index * vector->sizeElement), vector->sizeElement);
+	memcpy(temp, vector->data + (index * vector->sizeElement), vector->sizeElement * (vector->numElements - index));
 	vector->numElements++;
 	if (vector->numElements > vector->capacity) {
 		vector->capacity *= VGE_VECTOR_CAPACITY_GROWTH_FACTOR;
 		vector->data = realloc(vector->data, vector->capacity * vector->sizeElement);
 	}
+	memcpy(vector->data + (index + 1) * vector->sizeElement, temp, vector->sizeElement * (vector->numElements - index));
 	memcpy(vector->data + index * vector->sizeElement, data, vector->sizeElement);
 }
 
@@ -82,11 +82,12 @@ void vgeVectorRemoveLast(pVgeVector vector) {
 	}
 }
 void vgeVectorRemove(pVgeVector vector, uint64_t index) {
-	if (!vector || !vector->data || index >= vector->numElements) {
+	if (!vector || !vector->data) {
 		return;
 	}
-	if (index == vector->numElements - 1) {
+	if (index >= vector->numElements - 1) {
 		vgeVectorRemoveLast(vector);
+		return;
 	}
 	memcpy(vector->data + index * vector->sizeElement, vector->data + (index + 1) * vector->sizeElement, vector->sizeElement * (vector->numElements - index));
 }

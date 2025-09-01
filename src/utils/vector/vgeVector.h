@@ -6,7 +6,7 @@
 #define VGEVECTOR_H
 #include <stdint.h>
 
-typedef struct {
+typedef struct VgeVector{
 	uint64_t numElements;
 	uint64_t sizeElement;
 	uint64_t capacity;
