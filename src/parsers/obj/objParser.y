@@ -46,15 +46,30 @@ input:
 line:
     VERTEX FLOAT FLOAT FLOAT
     {
-
+        vec3 vert = {
+            $2,
+            $3,
+            $4
+        };
+        vgeVectorAppend(context->model->vertices, vert);
     }
     | VERTEX_NORMAL FLOAT FLOAT FLOAT
     {
-
+        vec3 norm = {
+            $2,
+            $3,
+            $4
+        };
+        vgeVectorAppend(context->model->normals, norm);
         printf("vertex Normal: %f %f %f\n", $2, $3, $4);
     }
     | VERTEX_TEXTURE FLOAT FLOAT
     {
+        vec2 tex = {
+            $2,
+            $3
+        };
+        vgeVectorAppend(context->model->textures, tex);
         printf("vertex Texture: %f %f\n", $2, $3);
     }
     | OBJECT_NAME STRING
@@ -66,7 +81,7 @@ line:
     {
         printf("material name: %s\n", $2);
     }
-    | USE_MATERIAL MTL_PATH
+    | USE_MATERIAL STRING
     {
         printf("use material: %s\n", $2);
     }
@@ -78,7 +93,7 @@ line:
     {
         printf("usemtl: %s\n", $2);
     }
-    | FACE indices indices indices indices
+    | FACE indices
     {
         printf("\n");
     }

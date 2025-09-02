@@ -6,19 +6,22 @@
 #define MODELPARSER_H
 
 #include <cglm/cglm.h>
+#include "../../utils/vector/vgeVector.h"
+
+typedef struct ObjFace {
+	vec3 faceVertex;
+	vec3 faceNormal;
+	vec2 faceTexture;
+} objFace, *pObjFace;
 
 typedef struct ObjModel {
 	char *name;
-	uint64_t numVertex;
-	vec3 *vertex;
-	uint64_t numTexture;
-	vec2 *texture;
-	uint64_t numNormal;
-	vec3 *normal;
-	uint64_t numFaces;
-	float *faces;
-	uint64_t numIndices;
-	uint32_t *indices;
+	char *mtlPath;
+	pVgeVector vertices;
+	pVgeVector textures;
+	pVgeVector normals;
+	pVgeVector faces;
+	pVgeVector indices;
 } objModel, *pObjModel;
 
 typedef struct ParserContext {
