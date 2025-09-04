@@ -7,6 +7,7 @@
 
 #include <cglm/cglm.h>
 #include "../../utils/vector/vgeVector.h"
+#include "../../graphics/model/modelStructs.h"
 
 typedef struct ObjFace {
 	vec3 faceVertex;
@@ -26,8 +27,10 @@ typedef struct ObjModel {
 
 typedef struct ParserContext {
 	pObjModel model;
+	pVgeVector faceIndices;
+	uint32_t currentIndex;
 } parserContext;
 
-pObjModel parseObjFile(char * filename);
+pVgeModel parseObjFile(pVulkanContext context, pVgePipelineGraphics pipeline, char * filename);
 
 #endif //MODELPARSER_H

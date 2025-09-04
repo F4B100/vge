@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "../parsers/obj/objParser.h"
+
 gameInfo info;
 
 void OnResize(pVgeWindow window, int32_t width, int32_t height) {
@@ -76,8 +78,8 @@ void GameInit() {
 
     VgePipelineGraphicsCreateInfo pipelineInfo = {
         .device = context->device,
-        .fragShaderPath = "shaders_bin/fragment.frag.spv",
-        .vertShaderPath = "shaders_bin/vertex.vert.spv",
+        .fragShaderPath = "shaders_bin/objDefault.frag.spv",
+        .vertShaderPath = "shaders_bin/objDefault.vert.spv",
         .colorFormat = VK_FORMAT_R8G8B8A8_SRGB,
         .viewportExtent = context->swapChainExtent,
         .renderPass = context->renderPass,
@@ -101,7 +103,8 @@ void GameInit() {
 
     info.frameContext = createFrameContext(info.frameContexCount, info.graphics->swapChainImageCount, info.graphics->device, info.graphics->commandPool);
 
-	info.model = createDefaultModel(context, info.graphicsP, VGE_MODEL_TRIANGLE);
+	info.model = parseObjFile(context, pipeline, "model/monkey.obj");
+	//info.model = parseObjFile(context, pipeline, "model/monkey.obj");
 
     GameStart(&info);
 
@@ -132,16 +135,16 @@ void GameStart(gameInfo *info) {
 }
 void GameLoop(gameInfo *info) {
 
-    VkClearValue clearColor = {
-        .color = {
-            (float) cos(vgeGetTimeSinceStart()),
-            ((float) cos(vgeGetTimeSinceStart() * 2.0f) + 1.0f) / 2.0f,
-            ((float) sin(vgeGetTimeSinceStart() * 2.0f) + 1.0f) / 2.0f,
-            1.0f
-        }
-    };
+	VkClearValue clearColor = {
+		.color = {
+			(float) cos(vgeGetTimeSinceStart()),
+			((float) cos(vgeGetTimeSinceStart() * 2.0f) + 1.0f) / 2.0f,
+			((float) sin(vgeGetTimeSinceStart() * 2.0f) + 1.0f) / 2.0f,
+			1.0f
+		}
+	};
 
-    renderPassStart(&info->frameContext[info->currentFrame], info->graphics->renderPass, info->graphics->swapChainExtent, info->graphics->frameBuffers, &clearColor);
+	renderPassStart(&info->frameContext[info->currentFrame], info->graphics->renderPass, info->graphics->swapChainExtent, info->graphics->frameBuffers, &clearColor);
 	mat4 mat = GLM_MAT4_IDENTITY_INIT;
 
 	mat4 *model = mapUniformBindingData(info->graphics, info->model, 0, 0, sizeof(mat4));
@@ -149,7 +152,7 @@ void GameLoop(gameInfo *info) {
 	vec3 w = {0.0f, 0.0f, 0.0f};
 	glm_translate(mat, w);
 
-	vec3 up = {1.0f, 1.0f, 1.0f};
+	vec3 up = {1.0f, 1.0f, 0.0f};
 	glm_rotate(mat, vgeGetTimeSinceStart(), up);
 
 	memcpy(model, mat, sizeof(mat));
@@ -158,7 +161,7 @@ void GameLoop(gameInfo *info) {
 
 	pVgeCamera camera = vgeCameraCreate(0.0f, 0.0f, 90.0f, 1280.0f / 720.0f, 0.1f, 300.0f);
 
-	vec3 newPos = {0.0f, 0.0f, 1.0f};
+	vec3 newPos = {0.0f, 0.0f, 3.0f};
 
 	cameraSetPositon(camera, newPos);
 
@@ -177,7 +180,7 @@ void GameLoop(gameInfo *info) {
 	updateUniformBinding(info->graphics, info->model, 0);
 	drawModel(info->graphics, &info->frameContext[info->currentFrame], info->graphicsP, info->model);
 
-    renderPassEnd(&info->frameContext[info->currentFrame]);
+	renderPassEnd(&info->frameContext[info->currentFrame]);
 
 	if (info->timeElapsed > 1.0f) {
 		printf("fps: %d\n", info->frameCount);

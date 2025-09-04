@@ -19,22 +19,20 @@ pVgeVector vgeVectorInit(uint64_t sizeElement) {
 	return vgeVector;
 }
 
-void vgeVectorFree(pVgeVector *vgeVector) {
-	if (!*vgeVector) {
+void vgeVectorFree(pVgeVector vgeVector) {
+	if (!vgeVector) {
 		return;
 	}
-	free((*vgeVector)->data);
-	free(*vgeVector);
-	*vgeVector = nullptr;
+	free(vgeVector->data);
+	free(vgeVector);
 }
 
-void *vgeVectorFreeKeepData(pVgeVector *vgeVector) {
-	if (!*vgeVector) {
+void *vgeVectorFreeKeepData(pVgeVector vgeVector) {
+	if (!vgeVector) {
 		return NULL;
 	}
-	void *data = (*vgeVector)->data;
-	free(*vgeVector);
-	*vgeVector = nullptr;
+	void *data = vgeVector->data;
+	free(vgeVector);
 	return data;
 }
 
@@ -48,6 +46,19 @@ void vgeVectorAppend(pVgeVector vector, void *data) {
 		vector->data = realloc(vector->data, vector->capacity * vector->sizeElement);
 	}
 	memcpy(vector->data + (vector->numElements - 1) * vector->sizeElement, data, vector->sizeElement);
+}
+
+void *vgeVectorAppendEmpty(pVgeVector vector) {
+	if (!vector) {
+		return NULL;
+	}
+	vector->numElements++;
+	if (vector->numElements > vector->capacity) {
+		vector->capacity *= VGE_VECTOR_CAPACITY_GROWTH_FACTOR;
+		vector->data = realloc(vector->data, vector->capacity * vector->sizeElement);
+	}
+	memset(vector->data + (vector->numElements - 1) * vector->sizeElement, 0, vector->sizeElement);
+	return vector->data + (vector->numElements - 1) * vector->sizeElement;
 }
 
 void vgeVectorInsert(pVgeVector vector, void *data, uint64_t index) {
@@ -96,6 +107,14 @@ void *vgeVectorGetData(pVgeVector vgeVector) {
 		return NULL;
 	}
 	return vgeVector->data;
+}
+
+uint64_t vgeVectorGetSize(pVgeVector vgeVector) {
+	return vgeVector->numElements;
+}
+
+uint64_t vgeVectorGetSizeElement(pVgeVector vgeVector) {
+	return vgeVector->sizeElement;
 }
 
 void *vgeVectorGetElement(pVgeVector vgeVector, uint64_t index) {

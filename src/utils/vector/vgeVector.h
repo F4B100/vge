@@ -18,16 +18,18 @@ typedef struct VgeVector{
 #define VGE_VECTOR_CAPACITY_SHRINK_FACTOR 0.25f
 
 pVgeVector vgeVectorInit(uint64_t sizeElement);
-void vgeVectorFree(pVgeVector *vgeVector);
-void *vgeVectorFreeKeepData(pVgeVector *vgeVector);
+void vgeVectorFree(pVgeVector vgeVector);
+void *vgeVectorFreeKeepData(pVgeVector vgeVector);
 
 void vgeVectorAppend(pVgeVector vector, void *data);
+void *vgeVectorAppendEmpty(pVgeVector vector);
 void vgeVectorInsert(pVgeVector vector, void *data, uint64_t index);
 void vgeVectorRemoveLast(pVgeVector vector);
 void vgeVectorRemove(pVgeVector vector, uint64_t index);
+
 void *vgeVectorGetData(pVgeVector vgeVector);
+uint64_t vgeVectorGetSize(pVgeVector vgeVector);
+uint64_t vgeVectorGetSizeElement(pVgeVector vgeVector);
 void *vgeVectorGetElement(pVgeVector vgeVector, uint64_t index);
-
-
 
 #endif //VGEVECTOR_H

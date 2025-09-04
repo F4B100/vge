@@ -16,10 +16,10 @@ pVgeModel createDefaultModel(pVulkanContext context, pVgePipelineGraphics pipeli
 		case VGE_MODEL_TRIANGLE:
 
 			float triangleVertices[] = {
-				-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-				0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+				-1.0f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+				0.1f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
 				0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-				-0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f
+				-2.0f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f
 			};
 
 			uint32_t triangleIndices[] = {

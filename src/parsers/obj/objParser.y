@@ -21,6 +21,7 @@
 
 %{
     #include "objParser.h"
+    #include <string.h>
 
     typedef void* yyscan_t;
     void objerror(parserContext *context, yyscan_t scanner, const char *err);
@@ -30,7 +31,7 @@
 %}
 
 %token OBJECT_NAME VERTEX_NORMAL VERTEX_TEXTURE VERTEX SHADING USE_MATERIAL MTL_NAME FACE SLASH
-%token <f> FLOAT
+%token <f> NUMBER
 %token <path> MTL_PATH
 %token <str> STRING
 %token <i> INTEGER
@@ -44,7 +45,7 @@ input:
     ;
 
 line:
-    VERTEX FLOAT FLOAT FLOAT
+    VERTEX NUMBER NUMBER NUMBER
     {
         vec3 vert = {
             $2,
@@ -53,7 +54,7 @@ line:
         };
         vgeVectorAppend(context->model->vertices, vert);
     }
-    | VERTEX_NORMAL FLOAT FLOAT FLOAT
+    | VERTEX_NORMAL NUMBER NUMBER NUMBER
     {
         vec3 norm = {
             $2,
@@ -61,54 +62,106 @@ line:
             $4
         };
         vgeVectorAppend(context->model->normals, norm);
-        printf("vertex Normal: %f %f %f\n", $2, $3, $4);
     }
-    | VERTEX_TEXTURE FLOAT FLOAT
+    | VERTEX_TEXTURE NUMBER NUMBER
     {
         vec2 tex = {
             $2,
             $3
         };
         vgeVectorAppend(context->model->textures, tex);
-        printf("vertex Texture: %f %f\n", $2, $3);
     }
     | OBJECT_NAME STRING
     {
         context->model->name = $2;
-        printf("model name: %s\n", $2);
     }
     | MTL_NAME MTL_PATH
     {
-        printf("material name: %s\n", $2);
     }
     | USE_MATERIAL STRING
     {
-        printf("use material: %s\n", $2);
     }
     | SHADING INTEGER
     {
-        printf("Shading: %d\n", $2);
     }
-    | USE_MATERIAL STRING
+    | FACE vertices
     {
-        printf("usemtl: %s\n", $2);
-    }
-    | FACE indices
-    {
-        printf("\n");
+
+        pObjFace face = nullptr;
+        for (uint64_t i = 0; i < vgeVectorGetSize(context->faceIndices); i++) {
+            int *indices = vgeVectorGetElement(context->faceIndices, i);
+
+            float *verts = vgeVectorGetElement(context->model->vertices, indices[0] - 1);
+            float *tex = vgeVectorGetElement(context->model->textures, indices[1] - 1);
+            float *norm = vgeVectorGetElement(context->model->normals, indices[2] - 1);
+
+            face = vgeVectorAppendEmpty(context->model->faces);
+            memcpy(&face->faceVertex, verts, sizeof(vec3));
+            memcpy(&face->faceTexture, tex, sizeof(vec2));
+            memcpy(&face->faceNormal, norm, sizeof(vec3));
+        }
+
+        uint32_t index = 1;
+        uint32_t realIndex = 0;
+
+        while(index < vgeVectorGetSize(context->faceIndices) - 1) {
+            realIndex = context->currentIndex;
+            vgeVectorAppend(context->model->indices, &realIndex);
+            realIndex = context->currentIndex + index;
+            vgeVectorAppend(context->model->indices, &realIndex);
+            realIndex++;
+            vgeVectorAppend(context->model->indices, &realIndex);
+            index ++;
+        }
+
+        context->currentIndex += vgeVectorGetSize(context->faceIndices);
+
+        vgeVectorFree(context->faceIndices);
+        context->faceIndices = vgeVectorInit(sizeof(ivec3));
     }
 ;
 
-indices:
-    INTEGER SLASH INTEGER SLASH INTEGER
+vertices:
+    |vertex vertices
+;
+
+vertex:
+    INTEGER
     {
-        printf("%d/%d/%d ", $1, $3, $5);
+        ivec3 vertexIndices = {
+            $1,
+            -1,
+            -1
+        };
+        vgeVectorAppend(context->faceIndices, &vertexIndices);
+    }
+    |INTEGER SLASH INTEGER
+    {
+        ivec3 vertexIndices = {
+            $1,
+            $3,
+            -1
+        };
+        vgeVectorAppend(context->faceIndices, &vertexIndices);
     }
     |INTEGER SLASH SLASH INTEGER
     {
-        printf("%d/%d", $1, $4);
+        ivec3 vertexIndices = {
+            $1,
+            -1,
+            $4
+        };
+        vgeVectorAppend(context->faceIndices, &vertexIndices);
     }
-;
+    |INTEGER SLASH INTEGER SLASH INTEGER
+    {
+        ivec3 vertexIndices = {
+            $1,
+            $3,
+            $5
+        };
+        vgeVectorAppend(context->faceIndices, &vertexIndices);
+    }
 
 %%
 

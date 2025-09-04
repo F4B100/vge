@@ -19,7 +19,7 @@
 "mtllib"                    {return MTL_NAME;}
 "f"                         {return FACE;}
 "/"                         {return SLASH;}
-[-+]?[0-9]*"."[0-9]*        {yylval_param->f = atof(yytext);return FLOAT;}
+[-+]?[0-9]*"."[0-9]*        {yylval_param->f = atof(yytext);return NUMBER;}
 [-+]?[0-9]*                 {yylval_param->i = atoi(yytext);return INTEGER;}
 [a-zA-Z0-9_.\/\\-]+\.mtl    {yylval_param->path = strdup(yytext);return MTL_PATH;}
 ([^ \n\t/])*                 {yylval_param->str = strdup(yytext);return STRING;}
