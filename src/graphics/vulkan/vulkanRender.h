@@ -7,6 +7,7 @@
 
 #include "vulkanDefs.h"
 #include "../model/modelStructs.h"
+#include "../model/modelDescriptors.h"
 #include "vulkanPipeline.h"
 
 typedef struct SwapChainSem {
@@ -29,7 +30,7 @@ void startFrame(frameContext *frameContext, VkDevice device, VkSwapchainKHR swap
 void renderPassStart(frameContext *frameContext, VkRenderPass renderPass, VkExtent2D extent, VkFramebuffer *frameBuffers, VkClearValue *clearValues);
 void renderPassEnd(frameContext *frameContext);
 
-void drawModel(pVulkanContext context, frameContext *frameContext, pVgePipelineGraphics graphicsPipeline, pVgeModel model) ;
+void drawModel(pVulkanContext context, frameContext *frameContext, pVgePipelineGraphics graphicsPipeline, pVgeModel model, pVgeDescriptor descriptor);
 
 void endFrame(frameContext *frameContext, VkSwapchainKHR swapChain, VkQueue presentQueue, VkQueue graphicsQueue);
 

@@ -55,18 +55,6 @@ pVgeModel parseObjFile(pVulkanContext context, pVgePipelineGraphics pipeline, ch
 
 	vgeModelCreateInfo info = {};
 
-
-	vgeModelBindingInfo infoBinding = {
-		.binding = 0,
-		.bindingType = VGE_BINDING_TYPE_UNIFORM_BUFFER,
-		.uniformInfo = {
-			.option = VGE_UNIFORM_CREATE_BUFFER,
-			.sizeUniform = sizeof(mat4) * 3
-		}
-	};
-
-	info.numBindings = 1;
-	info.bindings = &infoBinding;
 	info.pipeline = pipeline;
 
 	vgeVertexInfo vertexInfo = {

@@ -10,6 +10,7 @@ typedef struct VgeCamera {
 	float yaw;
 	float pitch;
 	vec3 position;
+	vec3 front;
 	vec3 up;
 	mat4 view;
 	float fov;
@@ -27,6 +28,7 @@ void cameraMove(pVgeCamera vgeCamera, vec3 delta);
 void cameraRotate(pVgeCamera vgeCamera, float yaw, float pitch);
 void cameraSetRotation(pVgeCamera vgeCamera, float yaw, float pitch);
 void cameraSetUp(pVgeCamera vgeCamera, vec3 up);
+void cameraLookAt(pVgeCamera vgeCamera, vec3 target);
 vec4 *getViewMatrix(pVgeCamera vgeCamera);
 
 void cameraSetFOV(pVgeCamera vgeCamera, float fov);

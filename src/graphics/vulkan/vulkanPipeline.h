@@ -51,7 +51,7 @@ typedef struct VgePipelineGraphicsCreateInfo_t {
 	pVgeVertexInputDescriptor vertexInputInfo;
 	uint64_t numDescriptorLayoutInfo;
 	pVgeDescriptorLayoutInfo descriptorLayoutInfo;
-} VgePipelineGraphicsCreateInfo;
+} vgePipelineGraphicsCreateInfo, *pVgePipelineGraphicsCreateInfo;
 
 typedef struct VgePipelineGraphics_t {
 	VkPipeline pipeline;
@@ -62,7 +62,7 @@ typedef struct VgePipelineGraphics_t {
 	VkShaderModule fragShaderModule;
 } vgePipelineGraphics, *pVgePipelineGraphics;
 
-vgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info);
+vgePipelineGraphics *createGraphicsPipeline(pVgePipelineGraphicsCreateInfo info);
 void createDescriptorPool(VkDevice device, VkDescriptorPool *toCreate);
 void createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkRenderPass *toCreate);
 void destroyGraphicsPipeline(VkDevice device, vgePipelineGraphics *pipeline);

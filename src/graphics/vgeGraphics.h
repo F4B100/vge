@@ -15,9 +15,8 @@
 #include "vulkan/vulkanSwapChain.h"
 #include "vulkan/vulkanRender.h"
 #include "vulkan/vulkanBuffer.h"
-#endif
-
 #include "model/modelStructs.h"
-#include "model/defaultModels.h"
+#include "model/modelDescriptors.h"
+#endif
 
 #endif //VGEGRAPHICS_H

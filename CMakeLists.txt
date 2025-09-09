@@ -7,8 +7,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
 include(cmake/CPM.cmake)
 
+# Create Xdg Shell Protocol files -----------------------------------------------------------------
 IF (LINUX)
-
 	set(XDG_OUTPUT_HEADER "xdg-shell-client-protocol.h")
 	set(XDG_OUTPUT_SOURCE "xdg-shell-protocol.c")
 
@@ -35,6 +35,7 @@ IF (LINUX)
 	message("${XDG_OUTPUTS}")
 	message("==============================================")
 endif ()
+# -------------------------------------------------------------------------------------------------
 
 # Parser Compile Section --------------------------------------------------------------------------
 find_program(BISON bison REQUIRED)

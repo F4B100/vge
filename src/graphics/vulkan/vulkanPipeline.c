@@ -5,7 +5,6 @@
 #include "vulkanPipeline.h"
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
 
 spirVCode *readSPIRVFile(char *filename) {
     FILE * file = fopen(filename, "rb");
@@ -119,32 +118,44 @@ void createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkRenderPa
     }
 }
 
-void createDescriptorSetLayout(VkDevice device, VkDescriptorSetLayout *toCreate) {
-    VkDescriptorSetLayoutBinding bindings[2];
+VkDescriptorSetLayout createDescriptorSetLayout(VkDevice device, pVgePipelineGraphicsCreateInfo info) {
+    VkDescriptorSetLayoutBinding bindings[info->numDescriptorLayoutInfo];
 
-    bindings[0].binding = 0;
-    bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    bindings[0].descriptorCount = 1;
-    bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    bindings[0].pImmutableSamplers = nullptr;
-
-	bindings[1].binding = 1;
-	bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	bindings[1].descriptorCount = 1;
-	bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	bindings[1].pImmutableSamplers = nullptr;
-
+	for (uint64_t i = 0; i < info->numDescriptorLayoutInfo; i++) {
+		bindings[i].binding = info->descriptorLayoutInfo[i].binding;
+		switch (info->descriptorLayoutInfo[i].type) {
+			case VGE_PIPELINE_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+				bindings[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			case VGE_PIPELINE_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+				bindings[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			default:
+				bindings[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		}
+		bindings[i].descriptorCount = info->descriptorLayoutInfo[i].count;
+		switch (info->descriptorLayoutInfo[i].stage) {
+			case VGE_PIPELINE_DESCRIPTOR_STAGE_VERTEX:
+				bindings[i].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+			case VGE_PIPELINE_DESCRIPTOR_STAGE_FRAGMENT:
+				bindings[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			default:
+				bindings[i].stageFlags = VK_SHADER_STAGE_ALL;
+		}
+		bindings[i].pImmutableSamplers = nullptr;
+	}
     VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = {
 	    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
     	.pNext = nullptr,
     	.flags = 0,
-	    .bindingCount = 2,
+	    .bindingCount = info->numDescriptorLayoutInfo,
 	    .pBindings = bindings
     };
 
-    if (vkCreateDescriptorSetLayout(device, &descriptorSetLayoutInfo, nullptr, toCreate) != VK_SUCCESS) {
+	VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+
+    if (vkCreateDescriptorSetLayout(device, &descriptorSetLayoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
         printf("failed to create descriptor set layout!");
     }
+	return descriptorSetLayout;
 }
 
 void createDescriptorPool(VkDevice device, VkDescriptorPool *toCreate) {
@@ -163,7 +174,7 @@ void createDescriptorPool(VkDevice device, VkDescriptorPool *toCreate) {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .poolSizeCount = 2,
         .pPoolSizes = poolSizes,
-        .maxSets = 1,
+        .maxSets = 2,
     	.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT
     };
 
@@ -172,7 +183,7 @@ void createDescriptorPool(VkDevice device, VkDescriptorPool *toCreate) {
     }
 }
 
-VkPipelineVertexInputStateCreateInfo* getVertexInputInfo(VgePipelineGraphicsCreateInfo *info) {
+VkPipelineVertexInputStateCreateInfo* getVertexInputInfo(pVgePipelineGraphicsCreateInfo info) {
 	VkPipelineVertexInputStateCreateInfo * vertexInputInfo = malloc(sizeof(VkPipelineVertexInputStateCreateInfo));
 	vertexInputInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInputInfo->pNext = nullptr;
@@ -210,7 +221,7 @@ void freeVertexInputStateCreateInfo(VkPipelineVertexInputStateCreateInfo *toFree
 	free(toFree);
 }
 
-vgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info) {
+vgePipelineGraphics *createGraphicsPipeline(pVgePipelineGraphicsCreateInfo info) {
     vgePipelineGraphics * newPipeline= malloc(sizeof(vgePipelineGraphics));
     memset(newPipeline, 0, sizeof(vgePipelineGraphics));
 
@@ -334,10 +345,9 @@ vgePipelineGraphics *createGraphicsPipeline(VgePipelineGraphicsCreateInfo *info)
         .blendConstants[3] = 0.0f
     };
 
-    VkDescriptorSetLayout descriptorSetLayout;
+    VkDescriptorSetLayout descriptorSetLayout = createDescriptorSetLayout(info->device, info);
 	VkDescriptorPool descriptorPool;
 
-	createDescriptorSetLayout(info->device, &descriptorSetLayout);
 	createDescriptorPool(info->device, &descriptorPool);
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {

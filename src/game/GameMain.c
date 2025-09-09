@@ -9,26 +9,26 @@
 
 #include "../parsers/obj/objParser.h"
 
-gameInfo info;
+gameInfo infoGlobal;
 
 void OnResize(pVgeWindow window, int32_t width, int32_t height) {
     if (width == 0 || height == 0) {
         return;
     }
-    cleanupSwapChain(info.graphics->frameBuffers, info.graphics->swapChainImageViews, info.graphics->swapChainImages,
-        info.graphics->swapchain, info.graphics->swapChainImageCount, info.graphics->device);
-    createFullSwapChain(info.graphics->renderPass,
-        info.graphics->physicalDevice,
-        info.graphics->device,
-        info.graphics->surface,
-        info.window,
-        &info.graphics->swapChainExtent,
-        &info.graphics->swapchain,
-        &info.graphics->swapChainImageCount,
-        &info.graphics->swapChainImages,
+    cleanupSwapChain(infoGlobal.graphics->frameBuffers, infoGlobal.graphics->swapChainImageViews, infoGlobal.graphics->swapChainImages,
+        infoGlobal.graphics->swapchain, infoGlobal.graphics->swapChainImageCount, infoGlobal.graphics->device);
+    createFullSwapChain(infoGlobal.graphics->renderPass,
+        infoGlobal.graphics->physicalDevice,
+        infoGlobal.graphics->device,
+        infoGlobal.graphics->surface,
+        infoGlobal.window,
+        &infoGlobal.graphics->swapChainExtent,
+        &infoGlobal.graphics->swapchain,
+        &infoGlobal.graphics->swapChainImageCount,
+        &infoGlobal.graphics->swapChainImages,
         VK_FORMAT_R8G8B8A8_SRGB,
-        &info.graphics->swapChainImageViews,
-        &info.graphics->frameBuffers
+        &infoGlobal.graphics->swapChainImageViews,
+        &infoGlobal.graphics->frameBuffers
         );
 }
 
@@ -36,19 +36,19 @@ void OnMouseMove(pVgeWindow window, int32_t x, int32_t y) {
 }
 
 void GameInit() {
-    vgeInit();
+	vgeInit();
 
-	info.window = vgeWindowInit(
+	infoGlobal.window = vgeWindowInit(
 		1280, 720,
 		"Vge Window"
 	);
 
-    vgeSetWindowSizeCallback(info.window, OnResize);
-	vgeSetMouseMoveCallback(info.window, OnMouseMove);
+	vgeSetWindowSizeCallback(infoGlobal.window, OnResize);
+	vgeSetMouseMoveCallback(infoGlobal.window, OnMouseMove);
 
-    pVulkanContext context = initVulkan(info.window);
+	pVulkanContext context = initVulkan(infoGlobal.window);
 
-    info.graphics = context;
+	infoGlobal.graphics = context;
 
 	vgeVertexDescription vertexInputDescriptor = {
 		.binding = 0,
@@ -76,41 +76,84 @@ void GameInit() {
 		}
 	};
 
-    VgePipelineGraphicsCreateInfo pipelineInfo = {
-        .device = context->device,
-        .fragShaderPath = "shaders_bin/objDefault.frag.spv",
-        .vertShaderPath = "shaders_bin/objDefault.vert.spv",
-        .colorFormat = VK_FORMAT_R8G8B8A8_SRGB,
-        .viewportExtent = context->swapChainExtent,
-        .renderPass = context->renderPass,
-    	.numVertexDescriptions = 1,
-    	.vertexDescriptionInfo = &vertexInputDescriptor,
-    	.numVertexInputDescriptions = 3,
-    	.vertexInputInfo = vertexInputInfo
+	vgeDescriptorLayoutInfo descriptorLayoutInfo[2] = {
+		{
+			.binding = 0,
+			.type = VGE_PIPELINE_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			.count = 1,
+			.stage = VGE_PIPELINE_DESCRIPTOR_STAGE_VERTEX
+		},
+		{
+			.binding = 1,
+			.type = VGE_PIPELINE_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			.count = 1,
+			.stage = VGE_PIPELINE_DESCRIPTOR_STAGE_FRAGMENT
+		}
+	};
 
-    };
+	vgePipelineGraphicsCreateInfo pipelineInfo = {
+		.device = context->device,
+		.fragShaderPath = "shaders_bin/objDefault.frag.spv",
+		.vertShaderPath = "shaders_bin/objDefault.vert.spv",
+		.colorFormat = VK_FORMAT_R8G8B8A8_SRGB,
+		.viewportExtent = context->swapChainExtent,
+		.renderPass = context->renderPass,
+		.numVertexDescriptions = 1,
+		.vertexDescriptionInfo = &vertexInputDescriptor,
+		.numVertexInputDescriptions = 3,
+		.vertexInputInfo = vertexInputInfo,
+		.numDescriptorLayoutInfo = 2,
+		.descriptorLayoutInfo = descriptorLayoutInfo
+	};
 
-    vgePipelineGraphics *pipeline = createGraphicsPipeline(&pipelineInfo);
+	vgePipelineGraphics *pipeline = createGraphicsPipeline(&pipelineInfo);
 
-    info.graphicsP = pipeline;
+	infoGlobal.graphicsP = pipeline;
 
-    info.frameCount = 0;
-    info.currentFrame = 0;
+	infoGlobal.frameCount = 0;
+	infoGlobal.currentFrame = 0;
 
-	info.pitch = 0.0f;info.yaw = 0.0f;
+	infoGlobal.pitch = 0.0f;infoGlobal.yaw = 0.0f;
 
-    info.frameContexCount = info.graphics->swapChainImageCount;
+	infoGlobal.frameContexCount = infoGlobal.graphics->swapChainImageCount;
 
-    info.frameContext = createFrameContext(info.frameContexCount, info.graphics->swapChainImageCount, info.graphics->device, info.graphics->commandPool);
+	infoGlobal.frameContext = createFrameContext(infoGlobal.frameContexCount, infoGlobal.graphics->swapChainImageCount, infoGlobal.graphics->device, infoGlobal.graphics->commandPool);
 
-	info.model = parseObjFile(context, pipeline, "model/monkey.obj");
-	//info.model = parseObjFile(context, pipeline, "model/monkey.obj");
+	infoGlobal.model = parseObjFile(context, pipeline, "model/monkey.obj");
+	infoGlobal.model2 = parseObjFile(context, pipeline, "model/Untitled.obj");
 
-    GameStart(&info);
+	vgeBindingInfo infoBinding [2] = {
+		{
+			.binding = 0,
+			.bindingType = VGE_BINDING_TYPE_UNIFORM_BUFFER,
+			.uniformInfo = {
+				.option = VGE_UNIFORM_CREATE_BUFFER,
+				.sizeUniform = sizeof(mat4) * 3
+			}
+		},
+		{
+			.binding = 1,
+			.bindingType = VGE_BINDING_TYPE_TEXTURE,
+			.textureInfo = {
+				.option = VGE_TEXTURE_NOT_INITIALIZED,
+				.TexturePath = "textures/img.png"
+			}
+		}
+	};
 
-    destroyFrameContext(info.frameContext, info.graphics->device, info.frameContexCount, info.graphics->swapChainImageCount);
+	vgeDescriptorInfo descriptorInfo = {
+		.numBindings = 2,
+		.bindings = infoBinding,
+		.pipeline = infoGlobal.graphicsP
+	};
 
-	destroyVgeModel(info.graphics, info.model);
+	infoGlobal.descriptor = createVgeDescriptorSet(context, &descriptorInfo);
+
+    GameStart(&infoGlobal);
+
+    destroyFrameContext(infoGlobal.frameContext, infoGlobal.graphics->device, infoGlobal.frameContexCount, infoGlobal.graphics->swapChainImageCount);
+
+	destroyVgeModel(infoGlobal.graphics, infoGlobal.model);
 
     destroyGraphicsPipeline(context->device, pipeline);
     destroyVulkan(context);
@@ -147,16 +190,17 @@ void GameLoop(gameInfo *info) {
 	renderPassStart(&info->frameContext[info->currentFrame], info->graphics->renderPass, info->graphics->swapChainExtent, info->graphics->frameBuffers, &clearColor);
 	mat4 mat = GLM_MAT4_IDENTITY_INIT;
 
-	mat4 *model = mapUniformBindingData(info->graphics, info->model, 0, 0, sizeof(mat4));
+	vec3 rotationAxis = {0.0f, 1.0f, 1.0f};
+	vec3 scaleVec = {1.0f, 2.0f, 1.0f};
 
-	vec3 w = {0.0f, 0.0f, 0.0f};
-	glm_translate(mat, w);
+	mat4 *model = mapUniformBindingData(info->graphics, info->descriptor, 0, 0, sizeof(mat4));
 
-	vec3 up = {1.0f, 1.0f, 0.0f};
-	glm_rotate(mat, vgeGetTimeSinceStart(), up);
+	glm_scale(mat, scaleVec);
+
+	glm_rotate(mat, vgeGetTimeSinceStart(), rotationAxis);
 
 	memcpy(model, mat, sizeof(mat));
-	unmapUniformBindingData(info->graphics, info->model, 0);
+	unmapUniformBindingData(info->graphics, info->descriptor, 0);
 
 
 	pVgeCamera camera = vgeCameraCreate(0.0f, 0.0f, 90.0f, 1280.0f / 720.0f, 0.1f, 300.0f);
@@ -167,18 +211,18 @@ void GameLoop(gameInfo *info) {
 
 	cameraSetRotation(camera, glm_rad(90.0f), glm_rad(180.0f));
 
-	mat4 *view = mapUniformBindingData(info->graphics, info->model, 0, sizeof(mat4), sizeof(mat4));
+	mat4 *view = mapUniformBindingData(info->graphics, info->descriptor, 0, sizeof(mat4), sizeof(mat4));
 
 	memcpy(view, getViewMatrix(camera), sizeof(mat));
-	unmapUniformBindingData(info->graphics, info->model, 0);
+	unmapUniformBindingData(info->graphics, info->descriptor, 0);
 
-	mat4 *perspective = mapUniformBindingData(info->graphics, info->model, 0, 2 * sizeof(mat4), sizeof(mat4));
+	mat4 *perspective = mapUniformBindingData(info->graphics, info->descriptor, 0, 2 * sizeof(mat4), sizeof(mat4));
 
 	memcpy(perspective, getPerspectiveMatrix(camera), sizeof(mat));
-	unmapUniformBindingData(info->graphics, info->model, 0);
+	unmapUniformBindingData(info->graphics, info->descriptor, 0);
 
-	updateUniformBinding(info->graphics, info->model, 0);
-	drawModel(info->graphics, &info->frameContext[info->currentFrame], info->graphicsP, info->model);
+	updateUniformBinding(info->graphics, info->descriptor, 0);
+	drawModel(info->graphics, &info->frameContext[info->currentFrame], info->graphicsP, info->model, info->descriptor);
 
 	renderPassEnd(&info->frameContext[info->currentFrame]);
 

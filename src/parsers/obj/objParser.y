@@ -91,9 +91,38 @@ line:
         for (uint64_t i = 0; i < vgeVectorGetSize(context->faceIndices); i++) {
             int *indices = vgeVectorGetElement(context->faceIndices, i);
 
-            float *verts = vgeVectorGetElement(context->model->vertices, indices[0] - 1);
-            float *tex = vgeVectorGetElement(context->model->textures, indices[1] - 1);
-            float *norm = vgeVectorGetElement(context->model->normals, indices[2] - 1);
+            float verts[3];
+            float tex[2];
+            float norm[3];
+
+            if(indices[0] > 0) {
+                float *vertsInfo = vgeVectorGetElement(context->model->vertices, indices[0] - 1);
+                verts[0] = vertsInfo[0];
+                verts[1] = vertsInfo[1];
+                verts[2] = vertsInfo[2];
+            } else {
+                verts[0] = 0.0f;
+                verts[1] = 0.0f;
+                verts[2] = 0.0f;
+            }
+            if(indices[1] > 0) {
+                float *texInfo = vgeVectorGetElement(context->model->textures, indices[1] - 1);
+                tex[0] = texInfo[0];
+                tex[1] = texInfo[1];
+            } else {
+                tex[0] = 0.0f;
+                tex[1] = 0.0f;
+            }
+            if(indices[2] > 0) {
+                float *normInfo = vgeVectorGetElement(context->model->normals, indices[2] - 1);
+                norm[0] = normInfo[0];
+                norm[1] = normInfo[1];
+                norm[2] = normInfo[2];
+            } else {
+                norm[0] = 0.0f;
+                norm[1] = 0.0f;
+                norm[2] = 0.0f;
+            }
 
             face = vgeVectorAppendEmpty(context->model->faces);
             memcpy(&face->faceVertex, verts, sizeof(vec3));
