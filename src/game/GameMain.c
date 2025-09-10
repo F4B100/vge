@@ -120,7 +120,6 @@ void GameInit() {
 	infoGlobal.frameContext = createFrameContext(infoGlobal.frameContexCount, infoGlobal.graphics->swapChainImageCount, infoGlobal.graphics->device, infoGlobal.graphics->commandPool);
 
 	infoGlobal.model = parseObjFile(context, pipeline, "model/monkey.obj");
-	infoGlobal.model2 = parseObjFile(context, pipeline, "model/Untitled.obj");
 
 	vgeBindingInfo infoBinding [2] = {
 		{
@@ -153,7 +152,10 @@ void GameInit() {
 
     destroyFrameContext(infoGlobal.frameContext, infoGlobal.graphics->device, infoGlobal.frameContexCount, infoGlobal.graphics->swapChainImageCount);
 
-	destroyVgeModel(infoGlobal.graphics, infoGlobal.model);
+	for (uint64_t i = 0; i < vgeVectorGetSize(infoGlobal.model); i++) {
+		pObjModel model = vgeVectorGetElement(infoGlobal.model, i);
+		destroyVgeModel(infoGlobal.graphics, model->model);
+	}
 
     destroyGraphicsPipeline(context->device, pipeline);
     destroyVulkan(context);
@@ -190,20 +192,13 @@ void GameLoop(gameInfo *info) {
 	renderPassStart(&info->frameContext[info->currentFrame], info->graphics->renderPass, info->graphics->swapChainExtent, info->graphics->frameBuffers, &clearColor);
 	mat4 mat = GLM_MAT4_IDENTITY_INIT;
 
-	vec3 rotationAxis = {0.0f, 1.0f, 1.0f};
-	vec3 scaleVec = {1.0f, 2.0f, 1.0f};
-
 	mat4 *model = mapUniformBindingData(info->graphics, info->descriptor, 0, 0, sizeof(mat4));
-
-	glm_scale(mat, scaleVec);
-
-	glm_rotate(mat, vgeGetTimeSinceStart(), rotationAxis);
 
 	memcpy(model, mat, sizeof(mat));
 	unmapUniformBindingData(info->graphics, info->descriptor, 0);
 
 
-	pVgeCamera camera = vgeCameraCreate(0.0f, 0.0f, 90.0f, 1280.0f / 720.0f, 0.1f, 300.0f);
+	pVgeCamera camera = vgeCameraCreate(0.0f, 0.0f, 90.0f, 1280.0f / 720.0f, 0.1f, 3000.0f);
 
 	vec3 newPos = {0.0f, 0.0f, 3.0f};
 
@@ -222,7 +217,11 @@ void GameLoop(gameInfo *info) {
 	unmapUniformBindingData(info->graphics, info->descriptor, 0);
 
 	updateUniformBinding(info->graphics, info->descriptor, 0);
-	drawModel(info->graphics, &info->frameContext[info->currentFrame], info->graphicsP, info->model, info->descriptor);
+
+	for (uint64_t i = 0; i < vgeVectorGetSize(infoGlobal.model); i++) {
+		pObjModel model1 = vgeVectorGetElement(infoGlobal.model, i);
+		drawModel(info->graphics, &info->frameContext[info->currentFrame], info->graphicsP, model1->model, info->descriptor);
+	}
 
 	renderPassEnd(&info->frameContext[info->currentFrame]);
 

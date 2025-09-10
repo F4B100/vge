@@ -15,22 +15,33 @@ typedef struct ObjFace {
 	vec2 faceTexture;
 } objFace, *pObjFace;
 
-typedef struct ObjModel {
-	char *name;
-	char *mtlPath;
+typedef struct ObjModelInfo {
 	pVgeVector vertices;
 	pVgeVector textures;
 	pVgeVector normals;
 	pVgeVector faces;
 	pVgeVector indices;
-} objModel, *pObjModel;
+} objModelInfo, *pObjModelInfo;
+
+typedef struct ObjOffsets {
+	char *name;
+	char *mtlPath;
+	uint64_t vertexOffset;
+	uint64_t indexOffset;
+} objOffsets, *pObjOffsets;
 
 typedef struct ParserContext {
-	pObjModel model;
+	objModelInfo model;
+	pVgeVector offsets;
 	pVgeVector faceIndices;
 	uint32_t currentIndex;
 } parserContext;
 
-pVgeModel parseObjFile(pVulkanContext context, pVgePipelineGraphics pipeline, char * filename);
+typedef struct ObjModel {
+	char *name;
+	pVgeModel model;
+} objModel, *pObjModel;
+
+pVgeVector parseObjFile(pVulkanContext context, pVgePipelineGraphics pipeline, char * filename);
 
 #endif //MODELPARSER_H

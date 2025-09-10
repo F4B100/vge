@@ -9,13 +9,13 @@
 #include "../graphics/vgeGraphics.h"
 #include "../window/vgeWindow.h"
 #include "../utils/camera.h"
+#include "../utils/vector/vgeVector.h"
 
 typedef struct GameInfo {
     vgeWindow *window;
     pVulkanContext graphics;
     vgePipelineGraphics *graphicsP;
-	pVgeModel model;
-	pVgeModel model2;
+	pVgeVector model;
 	pVgeDescriptor descriptor;
 	pVgeVulkanTexture texture;
 

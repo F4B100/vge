@@ -52,7 +52,7 @@ line:
             $3,
             $4
         };
-        vgeVectorAppend(context->model->vertices, vert);
+        vgeVectorAppend(context->model.vertices, vert);
     }
     | VERTEX_NORMAL NUMBER NUMBER NUMBER
     {
@@ -61,7 +61,7 @@ line:
             $3,
             $4
         };
-        vgeVectorAppend(context->model->normals, norm);
+        vgeVectorAppend(context->model.normals, norm);
     }
     | VERTEX_TEXTURE NUMBER NUMBER
     {
@@ -69,23 +69,29 @@ line:
             $2,
             $3
         };
-        vgeVectorAppend(context->model->textures, tex);
+        vgeVectorAppend(context->model.textures, tex);
     }
     | OBJECT_NAME STRING
     {
-        context->model->name = $2;
+        pObjOffsets offset = vgeVectorAppendEmpty(context->offsets);
+        offset->name = $2;
+        offset->vertexOffset = context->model.vertices->numElements;
+        offset->indexOffset = context->model.indices->numElements;
     }
     | MTL_NAME MTL_PATH
     {
+        free($2);
     }
     | USE_MATERIAL STRING
     {
+        free($2);
     }
     | SHADING INTEGER
     {
     }
     | FACE vertices
     {
+        pObjModelInfo model = &context->model;
 
         pObjFace face = nullptr;
         for (uint64_t i = 0; i < vgeVectorGetSize(context->faceIndices); i++) {
@@ -96,7 +102,7 @@ line:
             float norm[3];
 
             if(indices[0] > 0) {
-                float *vertsInfo = vgeVectorGetElement(context->model->vertices, indices[0] - 1);
+                float *vertsInfo = vgeVectorGetElement(model->vertices, indices[0] - 1);
                 verts[0] = vertsInfo[0];
                 verts[1] = vertsInfo[1];
                 verts[2] = vertsInfo[2];
@@ -106,7 +112,7 @@ line:
                 verts[2] = 0.0f;
             }
             if(indices[1] > 0) {
-                float *texInfo = vgeVectorGetElement(context->model->textures, indices[1] - 1);
+                float *texInfo = vgeVectorGetElement(model->textures, indices[1] - 1);
                 tex[0] = texInfo[0];
                 tex[1] = texInfo[1];
             } else {
@@ -114,7 +120,7 @@ line:
                 tex[1] = 0.0f;
             }
             if(indices[2] > 0) {
-                float *normInfo = vgeVectorGetElement(context->model->normals, indices[2] - 1);
+                float *normInfo = vgeVectorGetElement(model->normals, indices[2] - 1);
                 norm[0] = normInfo[0];
                 norm[1] = normInfo[1];
                 norm[2] = normInfo[2];
@@ -124,7 +130,7 @@ line:
                 norm[2] = 0.0f;
             }
 
-            face = vgeVectorAppendEmpty(context->model->faces);
+            face = vgeVectorAppendEmpty(model->faces);
             memcpy(&face->faceVertex, verts, sizeof(vec3));
             memcpy(&face->faceTexture, tex, sizeof(vec2));
             memcpy(&face->faceNormal, norm, sizeof(vec3));
@@ -135,11 +141,11 @@ line:
 
         while(index < vgeVectorGetSize(context->faceIndices) - 1) {
             realIndex = context->currentIndex;
-            vgeVectorAppend(context->model->indices, &realIndex);
+            vgeVectorAppend(model->indices, &realIndex);
             realIndex = context->currentIndex + index;
-            vgeVectorAppend(context->model->indices, &realIndex);
+            vgeVectorAppend(model->indices, &realIndex);
             realIndex++;
-            vgeVectorAppend(context->model->indices, &realIndex);
+            vgeVectorAppend(model->indices, &realIndex);
             index ++;
         }
 

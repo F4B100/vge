@@ -123,3 +123,10 @@ void *vgeVectorGetElement(pVgeVector vgeVector, uint64_t index) {
 	}
 	return vgeVector->data + index * vgeVector->sizeElement;
 }
+
+void *vgeVectorGetLast(pVgeVector vgeVector) {
+	if (!vgeVector) {
+		return NULL;
+	}
+	return vgeVectorGetElement(vgeVector, vgeVector->numElements - 1);
+}

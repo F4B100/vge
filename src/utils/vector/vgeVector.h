@@ -31,5 +31,6 @@ void *vgeVectorGetData(pVgeVector vgeVector);
 uint64_t vgeVectorGetSize(pVgeVector vgeVector);
 uint64_t vgeVectorGetSizeElement(pVgeVector vgeVector);
 void *vgeVectorGetElement(pVgeVector vgeVector, uint64_t index);
+void *vgeVectorGetLast(pVgeVector vgeVector);
 
 #endif //VGEVECTOR_H
