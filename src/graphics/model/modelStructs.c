@@ -3,6 +3,7 @@
 //
 
 #include "modelStructs.h"
+#include <memory.h>
 #include "../vulkan/vulkanBuffer.h"
 
 

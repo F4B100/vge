@@ -5,6 +5,7 @@
 #include "vulkanPipeline.h"
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 spirVCode *readSPIRVFile(char *filename) {
     FILE * file = fopen(filename, "rb");

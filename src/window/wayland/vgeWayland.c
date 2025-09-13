@@ -11,20 +11,28 @@
 
 pVgeGlobalContext windowGlobalContext;
 
+void registryGlobal(void *data, pWlRegistry wl_registry, uint32_t name, const char *interface, uint32_t version) {
+	printf("%d\n", name);
+};
+
+void registryGlobalRemove(void *data, pWlRegistry wl_registry, uint32_t name) {
+
+};
+
+struct wl_registry_listener registryListener = {
+	.global = registryGlobal,
+	.global_remove = registryGlobalRemove
+};
+
 void vgeInit() {
-	windowGlobalContext = malloc(sizeof(vgeGlobalContext));
+	windowGlobalContext = calloc(1, sizeof(vgeGlobalContext));
 
-	windowGlobalContext->display = wl_display_connect(NULL);
-	if (!windowGlobalContext->display) {
-		printf("Failed to connect to the Wayland display\n");
-		return ;
-	}
-
+	windowGlobalContext->display = wl_display_connect(nullptr);
 	windowGlobalContext->registry = wl_display_get_registry(windowGlobalContext->display);
-	wl_registry_add_listener(windowGlobalContext->registry, &registry_listener, window);
+
+	wl_registry_add_listener(windowGlobalContext->registry, &registryListener, windowGlobalContext);
 	wl_display_roundtrip(windowGlobalContext->display);
 
-	windowGlobalContext->StartTime = vgeGetTimeSinceStart();
 }
 
 pVgeWindow vgeWindowInit(int32_t width, int32_t height, char *title) {
@@ -36,13 +44,7 @@ void vgeGetWindowName(pVgeWindow window, char **name) {
 }
 
 double vgeGetTimeSinceStart() {
-	clock_t time = clock();
-	struct timespec *tp = nullptr;
-	if (clock_gettime(time, tp)) {
-		printf("couldnt get timespec\n");
-	}
-
-	return tp->tv_sec * 1000000000 + tp->tv_nsec / 1000000000.0f;
+	return 0.0f;
 }
 
 uint32_t vgeIsWindowClosed(pVgeWindow window) {

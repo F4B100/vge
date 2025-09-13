@@ -97,9 +97,9 @@ typedef struct VgeWindow {
     pXdgToplevel xdg_toplevel;
 	pVgeThread thread;
 
-	void (*mouseMoveCallback)(struct VgeWindow *window, uint32_t x, uint32_t y);
-	void (*mouseLeftDownCallback)(struct VgeWindow *window, uint32_t x, uint32_t y);
-	void (*resizeCallback)(struct VgeWindow *window, uint32_t x, uint32_t y);
+	void (*mouseMoveCallback)(struct VgeWindow *window, int32_t x, int32_t y);
+	void (*mouseLeftDownCallback)(struct VgeWindow *window, int32_t x, int32_t y);
+	void (*resizeCallback)(struct VgeWindow *window, int32_t x, int32_t y);
 } vgeWindow, *pVgeWindow;
 
 typedef struct VgeEventInfo {
@@ -167,7 +167,7 @@ void vgeGetWindowName(pVgeWindow window, char **name);
 
 const char **vgeGetVulkanExtensions(uint32_t *numExtensions,uint32_t numExtra, const char** extra);
 
-void vgeCreateVulkanWindowSurface(vgeWindow *window, VkInstance instance,VkSurfaceKHR *toCreate);
+void vgeCreateVulkanWindowSurface(pVgeWindow window, VkInstance instance,VkSurfaceKHR *toCreate);
 
 uint8_t physicalDeviceSupportsPresentation(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex);
 #endif

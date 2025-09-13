@@ -3,6 +3,7 @@
 #include "src/parsers/obj/objParser.h"
 
 int main(void) {
-	GameInit();
+	vgeInit();
+	vgeWindowInit(800, 600, "hahaha balls");
 }
 

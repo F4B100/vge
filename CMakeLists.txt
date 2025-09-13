@@ -26,7 +26,7 @@ IF (LINUX)
 	execute_process(
 			COMMAND wayland-scanner client-header /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml ${XDG_OUTPUT_HEADER}
 			COMMAND wayland-scanner private-code /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml ${XDG_OUTPUT_SOURCE}
-			WORKING_DIRECTORY src/window/wayland
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/window/wayland
 	)
 
 	add_custom_target(Xdg ALL DEPENDS ${XDG_OUTPUTS})
@@ -137,14 +137,12 @@ add_custom_target(CompileShaders ALL DEPENDS ${SPIRV_OUTPUTS})
 # External Deps Section ---------------------------------------------------------------------------
 
 if (WIN32)
-	add_compile_definitions(VGE_OS_WINDOWS)
 	add_compile_definitions(VGE_PLATFORM_WIN32)
 ENDIF ()
 IF (LINUX)
-	add_compile_definitions(VGE_OS_WAYLAND)
 	add_compile_definitions(VGE_PLATFORM_WAYLAND)
 ENDIF ()
-IF (NOT WIN32)
+IF (NOT WIN32 AND NOT LINUX)
 	CPMAddPackage(
 		NAME glfw
 		GITHUB_REPOSITORY glfw/glfw
@@ -181,14 +179,17 @@ add_executable(vge main.c ${SRC_FILES})
 
 IF (WIN32)
 	target_link_options(vge PRIVATE -static -static-libgcc -lwinpthread)
+	target_link_libraries(vge PRIVATE cglm m stb Vulkan::Vulkan)
 ENDIF ()
 
 IF (LINUX)
+    find_package(PkgConfig REQUIRED)
+	pkg_check_modules(WAYLAND REQUIRED wayland-client)
+	target_link_libraries(vge PRIVATE cglm m stb Vulkan::Vulkan ${WAYLAND_LIBRARIES})
 	target_link_options(vge PRIVATE -lwayland-client)
 	add_dependencies(vge Xdg)
 ENDIF ()
 
-target_link_libraries(vge PRIVATE cglm m stb Vulkan::Vulkan)
 target_include_directories(stb INTERFACE ${stb_SOURCE_DIR} ${cglm_SORCE_DIR})
 add_dependencies(vge CompileShaders)
 add_dependencies(vge GenerateBison)
