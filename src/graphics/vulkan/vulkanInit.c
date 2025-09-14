@@ -13,7 +13,7 @@
 #include "vulkanSwapChain.h"
 #include "vulkanQueues.h"
 
-pVulkanContext initVulkan(vgeWindow *window) {
+pVulkanContext initVulkan(pVgeWindow window) {
     pVulkanContext context = calloc(sizeof(vulkanContext), 1);
     if (!context) {
         return nullptr;

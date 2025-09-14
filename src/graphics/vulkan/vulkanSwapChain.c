@@ -86,7 +86,7 @@ uint32_t clamp(uint32_t val, uint32_t min, uint32_t max)
     return val;
 }
 
-VkExtent2D chooseSwapExtent(swapChainSupportDetails *supportDetails, vgeWindow *window) {
+VkExtent2D chooseSwapExtent(swapChainSupportDetails *supportDetails, pVgeWindow window) {
     VkSurfaceCapabilitiesKHR *capabilities = &supportDetails->capabilities;
     if (capabilities->currentExtent.width != UINT32_MAX) {
         return capabilities->currentExtent;
@@ -102,7 +102,7 @@ VkExtent2D chooseSwapExtent(swapChainSupportDetails *supportDetails, vgeWindow *
     return actualExtent;
 }
 
-void createSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, vgeWindow *window, VkExtent2D *swapExtent, VkSwapchainKHR *toCreate) {
+void createSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, pVgeWindow window, VkExtent2D *swapExtent, VkSwapchainKHR *toCreate) {
 
     swapChainSupportDetails *details = querySwapChainSupport(physicalDevice, surface);
 
@@ -220,7 +220,7 @@ void cleanupSwapChain(VkFramebuffer *frameBuffers, VkImageView *imageViews, VkIm
  * or else memory leaks will happen and the
  * vulkan validation layers will scream
  */
-void createFullSwapChain(VkRenderPass renderPass, VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, vgeWindow *window, VkExtent2D *swapExtent, VkSwapchainKHR*toCreate, uint32_t *numImages, VkImage **swapImages, VkFormat swapFormat, VkImageView **swapImageViews, VkFramebuffer**frameBuffers) {
+void createFullSwapChain(VkRenderPass renderPass, VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, pVgeWindow window, VkExtent2D *swapExtent, VkSwapchainKHR*toCreate, uint32_t *numImages, VkImage **swapImages, VkFormat swapFormat, VkImageView **swapImageViews, VkFramebuffer**frameBuffers) {
     vkDeviceWaitIdle(device);
     createSwapChain(physicalDevice, device, surface, window, swapExtent, toCreate);
     *numImages = getSwapChainImages(*toCreate, device, swapImages);

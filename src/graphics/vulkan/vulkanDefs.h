@@ -48,7 +48,7 @@ typedef struct VulkanContext {
 
     VkCommandPool commandPool;
 
-    vgeWindow *window;
+    pVgeWindow window;
 
 #ifndef nDEBUG
     VkDebugUtilsMessengerEXT debugMessenger;

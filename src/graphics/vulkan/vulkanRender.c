@@ -124,6 +124,8 @@ void renderPassStart(frameContext *frameContext, VkRenderPass renderPass, VkExte
 	vkCmdBeginRenderPass(frameContext->commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
+void subpassBegin(frameContext *frameContext, VkCommandBuffer commandBuffer) {}
+
 void renderPassEnd(frameContext *frameContext) {
 	vkCmdEndRenderPass(frameContext->commandBuffer);
 }

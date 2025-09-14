@@ -7,7 +7,7 @@
 
 #include "vulkanDefs.h"
 
-pVulkanContext initVulkan(vgeWindow *window);
+pVulkanContext initVulkan(pVgeWindow window);
 void destroyVulkan(pVulkanContext context);
 
 #endif //VULKANINIT_H

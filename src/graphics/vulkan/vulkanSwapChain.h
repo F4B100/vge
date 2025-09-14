@@ -17,13 +17,13 @@ typedef struct SwapChainSupportDetails {
 } swapChainSupportDetails;
 
 void createFullSwapChain(VkRenderPass renderPass, VkPhysicalDevice physicalDevice, VkDevice device,
-	VkSurfaceKHR surface, vgeWindow *window, VkExtent2D *swapExtent, VkSwapchainKHR*toCreate, uint32_t *numImages,
+	VkSurfaceKHR surface, pVgeWindow window, VkExtent2D *swapExtent, VkSwapchainKHR*toCreate, uint32_t *numImages,
 	VkImage **swapImages, VkFormat swapFormat, VkImageView **swapImageViews, VkFramebuffer**frameBuffers);
 
 void cleanupSwapChain(VkFramebuffer *frameBuffers, VkImageView *imageViews, VkImage *swapChainImages,
 	VkSwapchainKHR swapChain, uint32_t swapChainImageCount, VkDevice device);
 
-void createSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, vgeWindow *window, VkExtent2D *swapExtent, VkSwapchainKHR *toCreate);
+void createSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, pVgeWindow window, VkExtent2D *swapExtent, VkSwapchainKHR *toCreate);
 
 uint32_t getSwapChainImages(VkSwapchainKHR swapchain, VkDevice device, VkImage **toStore);
 
@@ -38,6 +38,6 @@ swapChainSupportDetails* querySwapChainSupport(VkPhysicalDevice physicalDevice, 
 uint32_t chooseSwapSurfaceFormat(swapChainSupportDetails *supportDetails);
 uint32_t chooseSwapPresentMode(swapChainSupportDetails *supportDetails);
 uint32_t clamp(uint32_t val, uint32_t min, uint32_t max);
-VkExtent2D chooseSwapExtent(swapChainSupportDetails *supportDetails, vgeWindow *window);
+VkExtent2D chooseSwapExtent(swapChainSupportDetails *supportDetails, pVgeWindow window);
 
 #endif //VULKANSWAPCHAIN_H
