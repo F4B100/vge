@@ -53,6 +53,7 @@ line:
             $4
         };
         vgeVectorAppend(context->model.vertices, vert);
+        printf("vert:%f|%f|%f\n", $2, $3, $4);
     }
     | VERTEX_NORMAL NUMBER NUMBER NUMBER
     {
@@ -62,6 +63,7 @@ line:
             $4
         };
         vgeVectorAppend(context->model.normals, norm);
+        printf("norm:%f|%f|%f\n", $2, $3, $4);
     }
     | VERTEX_TEXTURE NUMBER NUMBER
     {
@@ -70,6 +72,7 @@ line:
             $3
         };
         vgeVectorAppend(context->model.textures, tex);
+        printf("tex:%f|%f\n", $2, $3);
     }
     | OBJECT_NAME STRING
     {

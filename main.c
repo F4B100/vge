@@ -1,4 +1,6 @@
 
+#include <string.h>
+
 #include "src/game/vgeMain.h"
 #include "src/graphics/vulkan/vulkanInit.h"
 #include "src/graphics/vulkan/vulkanRender.h"
@@ -139,7 +141,7 @@ void GameStart(void *data) {
 
 	info->frameContext = createFrameContext(info->frameContexCount, info->graphics->swapChainImageCount, info->graphics->device, info->graphics->commandPool);
 
-	info->model = parseObjFile(context, pipeline, "model/squirCuble.obj");
+	info->model = parseObjFile(context, pipeline, "model/Untitled.obj");
 
 	vgeBindingInfo infoBinding [2] = {
 		{
@@ -167,11 +169,11 @@ void GameStart(void *data) {
 	};
 
 	info->descriptor = createVgeDescriptorSet(context, &descriptorInfo);
+	info->timeLastFrame = vgeGetTimeSinceStart();
 }
 void GameLoop(void *data) {
-	pGameInfo info = (pGameInfo)data;
+	pGameInfo info = data;
 
-	info->timeLastFrame = vgeGetTimeSinceStart();
 	const double currentFrame = vgeGetTimeSinceStart();
 	info->deltaTime = currentFrame - info->timeLastFrame;
 	info->timeLastFrame = currentFrame;
@@ -190,6 +192,8 @@ void GameLoop(void *data) {
 	renderPassStart(&info->frameContext[info->currentFrame], info->graphics->renderPass, info->graphics->swapChainExtent, info->graphics->frameBuffers, &clearColor);
 
 	mat4 mat = GLM_MAT4_IDENTITY_INIT;
+	vec3 dir = {0.0f, 1.0f, 1.0f};
+	glm_rotate(mat, vgeGetTimeSinceStart(), dir);
 	mat4 *model = mapUniformBindingData(info->graphics, info->descriptor, 0, 0, sizeof(mat4));
 	memcpy(model, mat, sizeof(mat));
 	unmapUniformBindingData(info->graphics, info->descriptor, 0);
@@ -213,6 +217,7 @@ void GameLoop(void *data) {
 	}
 
 	renderPassEnd(&info->frameContext[info->currentFrame]);
+	endFrame(&info->frameContext[info->currentFrame], info->graphics->swapchain, info->graphics->queues[1], info->graphics->queues[0]);
 
 	if (info->timeElapsed > 1.0f) {
 		printf("fps: %d\n", info->frameCount);
@@ -221,8 +226,6 @@ void GameLoop(void *data) {
 	}
 	info->timeElapsed += info->deltaTime;
 	info->frameCount++;
-
-	endFrame(&info->frameContext[info->currentFrame], info->graphics->swapchain, info->graphics->queues[1], info->graphics->queues[0]);
 
 	info->currentFrame = (info->currentFrame + 1) % info->graphics->swapChainImageCount;
 

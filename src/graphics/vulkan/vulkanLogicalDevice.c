@@ -32,8 +32,8 @@ void createLogicalDevice(VkPhysicalDevice physicalDevice, queueFamilyIndices *qu
 		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
     	.pNext = &device8BitStorageFeatures,
     	.bufferDeviceAddress = VK_TRUE,
-    	.bufferDeviceAddressCaptureReplay = VK_TRUE,
-    	.bufferDeviceAddressMultiDevice = VK_TRUE
+    	.bufferDeviceAddressCaptureReplay = VK_FALSE,
+    	.bufferDeviceAddressMultiDevice = VK_FALSE
 	};
 
 	VkPhysicalDeviceVulkanMemoryModelFeatures modelFeatures = {
@@ -41,7 +41,7 @@ void createLogicalDevice(VkPhysicalDevice physicalDevice, queueFamilyIndices *qu
     	.pNext = &deviceAddressFeatures,
     	.vulkanMemoryModel = VK_TRUE,
     	.vulkanMemoryModelDeviceScope = VK_TRUE,
-    	.vulkanMemoryModelAvailabilityVisibilityChains = VK_TRUE
+    	.vulkanMemoryModelAvailabilityVisibilityChains = VK_FALSE
 	};
 
 	VkPhysicalDeviceTimelineSemaphoreFeatures timelineFeatures = {

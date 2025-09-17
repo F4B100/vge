@@ -15,7 +15,8 @@ pVgeWindow vgeWindowInit(int32_t width, int32_t height, char *title);
 void *vgeWindowThreadFunc(void *arg);
 
 void vgeSetStartTime();
-double vgeGetTimeSinceStart();
+
+float vgeGetTimeSinceStart();
 
 void vgeGetContentSize(pVgeWindow window, uint32_t *width, uint32_t *height);
 
@@ -24,6 +25,7 @@ void vgeHandleEvents();
 uint32_t vgeIsWindowClosed(pVgeWindow window);
 
 // Callback Setting
+
 void vgeSetCallbackData(pVgeWindow window, void *data);
 
 void vgeSetWindowSizeCallback(pVgeWindow window, void (*func)(pVgeWindow window, void *data, int32_t width, int32_t height));

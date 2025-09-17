@@ -110,6 +110,9 @@ void *vgeVectorGetData(pVgeVector vgeVector) {
 }
 
 uint64_t vgeVectorGetSize(pVgeVector vgeVector) {
+	if (!vgeVector) {
+		return 0;
+	}
 	return vgeVector->numElements;
 }
 

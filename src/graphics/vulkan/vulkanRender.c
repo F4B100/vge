@@ -66,7 +66,8 @@ void destroyFrameContext(frameContext *frameContext, VkDevice device, uint32_t n
 void startFrame(frameContext *frameContext, VkDevice device, VkSwapchainKHR swapChain, VkImage *swapChainImages) {
 	vkWaitForFences(device, 1, &frameContext->RenderFinishedFence, VK_TRUE, UINT64_MAX);
 
-	VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, frameContext->imageAvailableSemaphore, VK_NULL_HANDLE, &frameContext->imageIndex);
+	vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, frameContext->imageAvailableSemaphore,
+	                                        VK_NULL_HANDLE, &frameContext->imageIndex);
 
 	vkResetFences(device, 1, &frameContext->RenderFinishedFence);
 

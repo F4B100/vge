@@ -30,6 +30,8 @@ pVulkanContext initVulkan(pVgeWindow window) {
         context
     );
 
+    printf("after!\n");
+
     vgeCreateVulkanWindowSurface(
         window,
         context->instance,

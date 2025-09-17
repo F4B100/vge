@@ -144,6 +144,7 @@ void initImageView(pVulkanContext context, pVgeVulkanTexture texture, VkFormat f
 }
 
 void initSampler(pVulkanContext context, pVgeVulkanTexture texture) {
+	printf("max aniso: %f\n", context->physicalDeviceProperties->maxAnisotropy);
 	VkSamplerCreateInfo samplerInfo = {
 		.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
 		.magFilter = VK_FILTER_LINEAR,
@@ -151,7 +152,7 @@ void initSampler(pVulkanContext context, pVgeVulkanTexture texture) {
 		.addressModeU = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
 		.addressModeV = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
 		.addressModeW = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
-		.anisotropyEnable = VK_TRUE,
+		.anisotropyEnable = VK_FALSE,
 		.maxAnisotropy = context->physicalDeviceProperties->maxAnisotropy,
 		.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
 		.compareEnable = VK_FALSE,
@@ -169,14 +170,16 @@ void initSampler(pVulkanContext context, pVgeVulkanTexture texture) {
 }
 
 pVgeVulkanTexture createVgeVulkanTexture(pVulkanContext context, const char *path) {
-	pVgeVulkanTexture texture = calloc(sizeof(pVgeVulkanTexture), 1);
-	int texWidth, texHeight;
-	stbi_uc* pixels = stbi_load(path, &texWidth, &texHeight, nullptr, STBI_rgb_alpha);
+	pVgeVulkanTexture texture = calloc(sizeof(vgeVulkanTexture), 1);
+	int texWidth, texHeight, texChannels;
+	stbi_uc* pixels = stbi_load(path, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 	VkDeviceSize imageSize = texWidth * texHeight;
 
 	if (!pixels) {
 		printf("failed to load texture image!\n");
 	}
+
+	printf("texChannels:%d\n", texChannels);
 
 	pVulkanBuffer staging = createStagingBuffer(context, imageSize, 4, pixels);
 

@@ -73,9 +73,18 @@ uint32_t findMemoryType(vulkanContext *context, uint32_t typeFilter, VkMemoryPro
 }
 
 void destroyBuffer(pVulkanContext context, pVulkanBuffer buffer) {
-	vkDestroyBuffer(context->device, buffer->buffer, nullptr);
-	vkFreeMemory(context->device, buffer->bufferMemory, nullptr);
-	free(buffer);
+	if (buffer) {
+		if (buffer->buffer != VK_NULL_HANDLE) {
+			vkDestroyBuffer(context->device, buffer->buffer, nullptr);
+			buffer->buffer = VK_NULL_HANDLE;
+		}
+		if (buffer->bufferMemory != VK_NULL_HANDLE) {
+			vkFreeMemory(context->device, buffer->bufferMemory, nullptr);
+			buffer->bufferMemory = VK_NULL_HANDLE;
+		}
+
+		free(buffer);
+	}
 }
 
 pVulkanBuffer createStagingBuffer(vulkanContext *context, uint32_t numElements, uint32_t sizeElements, void * data) {

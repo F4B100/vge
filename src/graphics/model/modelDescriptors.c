@@ -101,7 +101,7 @@ VkDescriptorSet createDescriptorSet(vulkanContext *context, pVgePipelineGraphics
 }
 
 pVgeDescriptor createVgeDescriptorSet(pVulkanContext context, pVgeDescriptorInfo info) {
-	pVgeDescriptor result = calloc(1, sizeof(pVgeDescriptor));
+	pVgeDescriptor result = calloc(1, sizeof(vgeDescriptor));
 	result->descriptorSet = createDescriptorSet(
 		context,
 		info->pipeline

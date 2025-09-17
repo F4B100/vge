@@ -9,23 +9,27 @@ include(cmake/CPM.cmake)
 
 # Create Xdg Shell Protocol files -----------------------------------------------------------------
 IF (LINUX)
-	set(XDG_OUTPUT_HEADER "xdg-shell-client-protocol.h")
-	set(XDG_OUTPUT_SOURCE "xdg-shell-protocol.c")
+	set(XDG_OUTPUT_HEADER "xdg-shell-client-protocol.h" "xdg-activation-v1-client-protocol.h")
+	set(XDG_OUTPUT_SOURCE "xdg-shell-protocol.c" "xdg-activation-v1-client-protocol.c")
 
 	set(XDG_OUTPUTS ${XDG_OUTPUT_HEADER};${XDG_OUTPUT_SOURCE})
 
 	add_custom_command(
 			OUTPUT ${XDG_OUTPUTS}
-			COMMAND wayland-scanner client-header /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml ${XDG_OUTPUT_HEADER}
-			COMMAND wayland-scanner private-code /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml ${XDG_OUTPUT_SOURCE}
+			COMMAND wayland-scanner client-header /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml xdg-shell-client-protocol.h
+			COMMAND wayland-scanner private-code /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml xdg-shell-protocol.c
+			COMMAND wayland-scanner client-header /usr/share/wayland-protocols/staging/xdg-activation/xdg-activation-v1.xml xdg-activation-v1-client-protocol.h
+			COMMAND wayland-scanner private-code /usr/share/wayland-protocols/staging/xdg-activation/xdg-activation-v1.xml xdg-activation-v1-client-protocol.c
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/window/wayland
 			COMMENT "Creating xdg sources ${XDG_OUTPUTS}"
 			VERBATIM
 	)
 
 	execute_process(
-			COMMAND wayland-scanner client-header /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml ${XDG_OUTPUT_HEADER}
-			COMMAND wayland-scanner private-code /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml ${XDG_OUTPUT_SOURCE}
+			COMMAND wayland-scanner client-header /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml xdg-shell-client-protocol.h
+			COMMAND wayland-scanner private-code /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml xdg-shell-protocol.c
+			COMMAND wayland-scanner client-header /usr/share/wayland-protocols/staging/xdg-activation/xdg-activation-v1.xml xdg-activation-v1-client-protocol.h
+			COMMAND wayland-scanner private-code /usr/share/wayland-protocols/staging/xdg-activation/xdg-activation-v1.xml xdg-activation-v1-client-protocol.c
 			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/window/wayland
 	)
 
