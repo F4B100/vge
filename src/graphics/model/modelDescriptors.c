@@ -69,7 +69,7 @@ void updateTextureBinding(pVulkanContext context, pVgeDescriptor descriptor, uin
 	};
 	VkWriteDescriptorSet descriptorWrite = {
 		.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-		.pNext = NULL,
+		.pNext = nullptr,
 		.dstSet = descriptor->descriptorSet,
 		.dstBinding = binding,
 		.dstArrayElement = 0,

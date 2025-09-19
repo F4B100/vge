@@ -304,7 +304,7 @@ vgePipelineGraphics *createGraphicsPipeline(pVgePipelineGraphicsCreateInfo info)
         .depthClampEnable = VK_TRUE,
         .rasterizerDiscardEnable = VK_FALSE,
         .polygonMode = VK_POLYGON_MODE_FILL,
-        .lineWidth = 2.0f,
+        .lineWidth = 5.0f,
         .cullMode = VK_CULL_MODE_FRONT_BIT,
         .frontFace = VK_FRONT_FACE_CLOCKWISE,
         .depthBiasEnable = VK_FALSE,
