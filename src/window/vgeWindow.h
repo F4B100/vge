@@ -16,7 +16,7 @@ void *vgeWindowThreadFunc(void *arg);
 
 void vgeSetStartTime();
 
-float vgeGetTimeSinceStart();
+double vgeGetTimeSinceStart();
 
 void vgeGetContentSize(pVgeWindow window, uint32_t *width, uint32_t *height);
 

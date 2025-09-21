@@ -141,7 +141,7 @@ void GameStart(void *data) {
 
 	info->frameContext = createFrameContext(info->frameContexCount, info->graphics->swapChainImageCount, info->graphics->device, info->graphics->commandPool);
 
-	info->model = parseObjFile(context, pipeline, "model/ds1.obj");
+	info->model = parseObjFile(context, pipeline, "model/monkey.obj");
 
 	vgeBindingInfo infoBinding [2] = {
 		{
@@ -192,7 +192,7 @@ void GameLoop(void *data) {
 	renderPassStart(&info->frameContext[info->currentFrame], info->graphics->renderPass, info->graphics->swapChainExtent, info->graphics->frameBuffers, &clearColor);
 
 	mat4 mat = GLM_MAT4_IDENTITY_INIT;
-	float scale = 0.01f;
+	float scale = 1.0f;
 	vec3 scaleVec = {scale, scale, scale};
 	glm_scale(mat, scaleVec);
 	mat4 *model = mapUniformBindingData(info->graphics, info->descriptor, 0, 0, sizeof(mat4));
@@ -200,10 +200,9 @@ void GameLoop(void *data) {
 	unmapUniformBindingData(info->graphics, info->descriptor, 0);
 
 
-	pVgeCamera camera = vgeCameraCreate(0.0f, 0.0f, 90.0f, 1280.0f / 720.0f, 0.1f, 3000.0f);
-	vec3 newPos = {0.0f, 0.0f, 5.0f};
+	pVgeCamera camera = vgeCameraCreate(glm_rad(-90.0f), 0.0f, 90.0f, 1280.0f / 720.0f, 0.1f, 3000.0f);
+	vec3 newPos = {0.0f, 0.0f, 2.0f};
 	cameraSetPositon(camera, newPos);
-	cameraSetRotation(camera, vgeGetTimeSinceStart(), glm_rad(180.0f));
 	mat4 *view = mapUniformBindingData(info->graphics, info->descriptor, 0, sizeof(mat4), sizeof(mat4));
 	memcpy(view, getViewMatrix(camera), sizeof(mat));
 	unmapUniformBindingData(info->graphics, info->descriptor, 0);
@@ -214,9 +213,7 @@ void GameLoop(void *data) {
 
 	for (uint64_t i = 0; i < vgeVectorGetSize(info->model); i++) {
 		pObjModel model1 = vgeVectorGetElement(info->model, i);
-		if (strcmp(model1->name, "Depths")) {
-			drawModel(info->graphics, &info->frameContext[info->currentFrame], info->graphicsP, model1->model, info->descriptor);
-		}
+		drawModel(info->graphics, &info->frameContext[info->currentFrame], info->graphicsP, model1->model, info->descriptor);
 	}
 
 	renderPassEnd(&info->frameContext[info->currentFrame]);
