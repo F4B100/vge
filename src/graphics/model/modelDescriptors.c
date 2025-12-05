@@ -4,6 +4,9 @@
 
 #include "modelDescriptors.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 void * mapUniformBindingData(pVulkanContext context, pVgeDescriptor descriptor, uint64_t binding, uint64_t offset, uint64_t size) {
 	if (binding >= descriptor->numBindings || descriptor->bindings[binding].bindingType != VGE_BINDING_TYPE_UNIFORM_BUFFER) {
 		return nullptr;

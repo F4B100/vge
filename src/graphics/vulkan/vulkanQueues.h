@@ -27,7 +27,7 @@ typedef struct VkQueueFamilyIndices {
 } queueFamilyIndices;
 
 
-queueFamilyIndices *searchQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+queueFamilyIndices *searchQueueFamilies(VkPhysicalDevice physicalDevice);
 void freeQueueFamilies(queueFamilyIndices *queueFamilyIndices);
 uint8_t isQueueFamiliesComplete(queueFamilyIndices *queueFamilyIndices);
 

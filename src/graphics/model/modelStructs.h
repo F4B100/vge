@@ -4,7 +4,10 @@
 
 #ifndef MODELSTRUCTS_H
 #define MODELSTRUCTS_H
+#include <memory.h>
+#include <stdlib.h>
 #include <stdint.h>
+#include "../vulkan/vulkanDefs.h"
 #include "../vulkan/vulkanPipeline.h"
 #include "../vulkan/vulkanBuffer.h"
 

@@ -5,6 +5,7 @@
 #ifndef VULKANBUFFER_H
 #define VULKANBUFFER_H
 
+#include "vulkanDefs.h"
 #include "../vulkan/vulkanCommands.h"
 
 typedef struct VgeVulkanBuffer {
@@ -24,7 +25,7 @@ typedef struct VgeIndexBuffer {
 	vulkanBuffer buffer;
 } vgeIndexBuffer, *pVgeIndexBuffer;
 
-pVulkanBuffer initBuffer(vulkanContext *context, uint64_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+pVulkanBuffer initBuffer(pVulkanContext context, uint64_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
 void destroyBuffer(pVulkanContext context, pVulkanBuffer buffer);
 
 void copyBuffer(vulkanContext *context, pVulkanBuffer src, pVulkanBuffer dst) ;

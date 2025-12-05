@@ -5,7 +5,7 @@
 #include "vulkanQueues.h"
 #include <stdio.h>
 
-queueFamilyIndices *searchQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface) {
+queueFamilyIndices *searchQueueFamilies(VkPhysicalDevice physicalDevice) {
 
     queueFamilyIndices *queueFamilies = calloc(sizeof(queueFamilyIndices), 1);
 
@@ -32,8 +32,7 @@ queueFamilyIndices *searchQueueFamilies(VkPhysicalDevice physicalDevice, VkSurfa
             queueFamiliesToAllocate -= 1;
         }
 
-        VkBool32 presentSupport = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &presentSupport);
+        VkBool32 presentSupport = physicalDeviceSupportsPresentation(physicalDevice, i);
 
         if (presentSupport && !queueFamilies->queueInfoArr[1].hasQueueFamily && !queueFamilyPropertiesArr[i].queueCount - thisQueueFamiliesAllocated <= 0) {
             queueFamilies->queueInfoArr[1].queueFamilyIndex = i;

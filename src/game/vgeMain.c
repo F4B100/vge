@@ -7,8 +7,13 @@
 
 #include <stdlib.h>
 
+#include "../utils/vgeThread.h"
+#include "../window/vgeWindow.h"
+
 void startEngine(uint64_t sizeData) {
-	void *data = calloc(sizeData, 1);
+	vgeInit();
+	byte data[sizeData];
+	memset(data, 0, sizeData);
 	GameStart(data);
 	while (exitCondition(data)) {
 		GameLoop(data);

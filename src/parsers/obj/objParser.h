@@ -4,10 +4,11 @@
 
 #ifndef MODELPARSER_H
 #define MODELPARSER_H
+#pragma once
 
 #include <cglm/cglm.h>
-#include "../../utils/vector/vgeVector.h"
 #include "../../graphics/model/modelStructs.h"
+#include "../../dataStructs/typeDefs.h"
 
 typedef struct ObjFace {
 	vec3 faceVertex;
@@ -16,11 +17,11 @@ typedef struct ObjFace {
 } objFace, *pObjFace;
 
 typedef struct ObjModelInfo {
-	pVgeVector vertices;
-	pVgeVector textures;
-	pVgeVector normals;
-	pVgeVector faces;
-	pVgeVector indices;
+	vec3 *vertices;
+	vec2 *textures;
+	vec3 *normals;
+	pObjFace faces;
+	pUint32 indices;
 } objModelInfo, *pObjModelInfo;
 
 typedef struct ObjOffsets {
@@ -32,8 +33,8 @@ typedef struct ObjOffsets {
 
 typedef struct ParserContext {
 	objModelInfo model;
-	pVgeVector offsets;
-	pVgeVector faceIndices;
+	pObjOffsets offsets;
+	ivec3 *faceIndices;
 	uint32_t currentIndex;
 } parserContext;
 
@@ -42,6 +43,6 @@ typedef struct ObjModel {
 	pVgeModel model;
 } objModel, *pObjModel;
 
-pVgeVector parseObjFile(pVulkanContext context, pVgePipelineGraphics pipeline, char * filename);
+pObjModel parseObjFile(pVulkanContext context, pVgePipelineGraphics pipeline, char * filepath);
 
 #endif //MODELPARSER_H

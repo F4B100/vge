@@ -4,6 +4,8 @@
 
 #include "vulkanBuffer.h"
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 pVulkanBuffer initBuffer(vulkanContext *context, uint64_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
@@ -94,6 +96,9 @@ pVulkanBuffer createStagingBuffer(vulkanContext *context, uint32_t numElements, 
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 		);
+	if (!data) {
+		return stagingBuffer;
+	}
 
 	void* deviceData;
 	vkMapMemory(context->device, stagingBuffer->bufferMemory, 0, stagingBuffer->size, 0, &deviceData);

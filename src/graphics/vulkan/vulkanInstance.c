@@ -2,7 +2,11 @@
 // Created by fabio on 20-06-2025.
 //
 
+#include <vulkan/vulkan.h>
 #include "vulkanInstance.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 #ifdef NDEBUG
     #define VALIDATION_LAYERS_COUNT 0
@@ -26,9 +30,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData) {
-	fprintf(stderr, "=============================================\n");
-	fprintf(stderr, "validation layer: %s\n", pCallbackData->pMessage);
-	fprintf(stderr, "=============================================\n");
+	printf("%s\n", pCallbackData->pMessage);
 
     return VK_FALSE;
 }
@@ -78,14 +80,14 @@ void createValidationMessenger(VkInstance instance, VkDebugUtilsMessengerEXT *to
 }
 #endif
 
-void createVulkanInstance(const char *windowName, pVulkanContext context) {
+void createVulkanInstance(const char *appName, pVulkanContext context) {
 
     VkApplicationInfo appInfo = {
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .apiVersion = VK_MAKE_VERSION(1, 4, 0),
         .engineVersion = VK_MAKE_VERSION(0, 0, 1),
         .applicationVersion = VK_MAKE_VERSION(0, 0, 1),
-        .pApplicationName = windowName,
+        .pApplicationName = appName,
         .pEngineName = "vge"
     };
 

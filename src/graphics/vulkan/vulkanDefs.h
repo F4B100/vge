@@ -4,17 +4,16 @@
 
 #ifndef VULKANDEFS_H
 #define VULKANDEFS_H
-
+#include <vulkan/vulkan.h>
+#include <memory.h>
+#include <stdlib.h>
 #ifdef VGE_PLATFORM_WIN32
 #define VK_USE_PLATFORM_WIN32_KHR
 #elifdef VGE_PLATFORM_WAYLAND
 #define VK_USE_PLATFORM_WAYLAND_KHR
 #endif
 
-#include <vulkan/vulkan.h>
 #include "../../window/vgeWindow.h"
-#include "cglm/call/vec3.h"
-
 #define TRUE 1
 #define FALSE 0
 
@@ -31,28 +30,59 @@ typedef struct VulkanContext {
     VkInstance instance;
     VkPhysicalDevice physicalDevice;
 	pPhysicalDeviceProperties physicalDeviceProperties;
-
-    VkSurfaceKHR surface;
-
     VkDevice device;
     VkQueue queues[QUEUE_NUMBER];
 
-    VkSwapchainKHR swapchain;
-    VkExtent2D swapChainExtent;
-    uint32_t swapChainImageCount;
-    VkImageView *swapChainImageViews;
-    VkImage *swapChainImages;
-    VkFramebuffer *frameBuffers;
-
-    VkRenderPass renderPass;
-
-    VkCommandPool commandPool;
-
-    pVgeWindow window;
-
+	VkCommandPool commandPool;
 #ifndef nDEBUG
     VkDebugUtilsMessengerEXT debugMessenger;
 #endif
 } vulkanContext, *pVulkanContext;
+
+typedef struct SwapChainSem {
+	VkSemaphore renderFinishedSemaphore;
+} swapChainSem;
+
+typedef struct FrameContext {
+	uint32_t imageIndex;
+	VkCommandBuffer commandBuffer;
+	VkSemaphore imageAvailableSemaphore;
+	swapChainSem *swapSemaphores;
+	VkFence RenderFinishedFence;
+} frameContext;
+
+typedef struct VgeVulkanTexture {
+	VkImage image;
+	VkDeviceMemory memory;
+	VkImageView imageView;
+	VkSampler sampler;
+} vgeVulkanTexture, *pVgeVulkanTexture;
+
+typedef struct VgeDepthBuffer {
+	VkImage image;
+	VkDeviceMemory memory;
+	VkImageView imageView;
+} vgeDepthBuffer, *pVgeDepthBuffer;
+
+typedef struct VulkanSwapchain {
+    VkSurfaceKHR surface;
+
+	VkSwapchainKHR swapchain;
+	VkFormat colorFormat;
+	VkExtent2D swapChainExtent;
+	uint32_t swapChainImageCount;
+	VkImageView *swapChainImageViews;
+	VkImage *swapChainImages;
+	VkFramebuffer *frameBuffers;
+	uint32_t currentFrame;
+	frameContext *frameContext;
+
+	pVgeDepthBuffer depth;
+
+	VkClearColorValue clearColor;
+
+	VkRenderPass renderPass;
+	pVgeWindow window;
+} vulkanSwapchain, *pVulkanSwapchain;
 
 #endif //VULKANDEFS_H

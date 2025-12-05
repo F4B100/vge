@@ -1,76 +1,90 @@
 
 #include <string.h>
+#include <unistd.h>
 
 #include "src/game/vgeMain.h"
 #include "src/graphics/vulkan/vulkanInit.h"
 #include "src/graphics/vulkan/vulkanRender.h"
 #include "src/graphics/vulkan/vulkanSwapChain.h"
 #include "src/parsers/obj/objParser.h"
+pVgeWindow parseWindowConfFile(char * filename);
 #include "src/utils/camera.h"
 
 typedef struct GameInfo {
 	pVgeWindow window;
-	pVulkanContext graphics;
+	pVulkanContext context;
+	pVulkanSwapchain swapChain;
 	vgePipelineGraphics *graphicsP;
 	pVgeVector model;
 	pVgeDescriptor descriptor;
-	pVgeVulkanTexture texture;
+	pVgeDescriptor descriptor2;
+
+	pVgeCamera camera;
 
 	uint32_t frameContexCount;
 	uint32_t currentFrame;
 	frameContext *frameContext;
 
-	uint32_t lastMouseX, lastMouseY;
 	float pitch, yaw;
 
 	double timeLastFrame;
 	double deltaTime;
 	uint32_t frameCount;
 	double timeElapsed;
+
+	vgeKeyboard kb;
+
+	uint32_t firstMouse;
 } gameInfo, *pGameInfo;
 
 void OnResize(pVgeWindow window, void *data, int32_t width, int32_t height) {
-	pGameInfo info = (pGameInfo)data;
+	pGameInfo info = data;
     if (width == 0 || height == 0) {
         return;
     }
-    cleanupSwapChain(info->graphics->frameBuffers, info->graphics->swapChainImageViews, info->graphics->swapChainImages,
-        info->graphics->swapchain, info->graphics->swapChainImageCount, info->graphics->device);
-    createFullSwapChain(info->graphics->renderPass,
-        info->graphics->physicalDevice,
-        info->graphics->device,
-        info->graphics->surface,
-        info->window,
-        &info->graphics->swapChainExtent,
-        &info->graphics->swapchain,
-        &info->graphics->swapChainImageCount,
-        &info->graphics->swapChainImages,
-        VK_FORMAT_R8G8B8A8_SRGB,
-        &info->graphics->swapChainImageViews,
-        &info->graphics->frameBuffers
-        );
+	resizeSwapchain(info->context, info->swapChain);
+	int32_t x, y;
+	vgeGetContentSize(info->window, &x, &y);
+	cameraSetAspectRatio(info->camera, (float)x / (float)y);
 }
 
 void OnMouseMove(pVgeWindow window, void *data, int32_t x, int32_t y) {
+	pGameInfo info = data;
+	if (x > 0 || y > 0) {
+		//printf("%.6f|%d|%.6f|%d\n", (float)x * 0.0001f, x, (float)y * 0.0001f, y);
+	}
+	cameraRotate(info->camera , (float)x * 0.0001f, (float)y * 0.0001f);
+	if (x > 0 || y > 0) {
+		float yaw, pitch;
+		cameraGetRotation(info->camera, &yaw, &pitch);
+		printf("camera:%.6f|%.6f\n", yaw, pitch);
+	}
+}
+
+void OnKeyDown(pVgeWindow window, void *data, int8_t key) {
+
 }
 
 void GameStart(void *data) {
-	pGameInfo info = (pGameInfo)data;
+	pGameInfo info = data;
+	info->firstMouse = true;
 
 	vgeInit();
 
-	info->window = vgeWindowInit(
-		1280, 720,
-		"Vge Window"
-	);
+	info->window = vgeWindowInit(1600, 1600, "mein window");
+	if (info->window == NULL) {
+		exit(1);
+	}
+
+	vgeSetWindowCaptureMouse(info->window, true);
 
 	vgeSetCallbackData(info->window, data);
 	vgeSetWindowSizeCallback(info->window, OnResize);
 	vgeSetMouseMoveCallback(info->window, OnMouseMove);
+	vgeSetKeyDownCallback(info->window, OnKeyDown);
 
-	pVulkanContext context = initVulkan(info->window);
-
-	info->graphics = context;
+	info->context = initVulkan("THA GAME");
+	info->swapChain = createFullSwapChain(info->context, info->window);
 
 	vgeVertexDescription vertexInputDescriptor = {
 		.binding = 0,
@@ -98,7 +112,7 @@ void GameStart(void *data) {
 		}
 	};
 
-	vgeDescriptorLayoutInfo descriptorLayoutInfo[2] = {
+	vgeDescriptorLayoutInfo descriptorLayoutInfo[6] = {
 		{
 			.binding = 0,
 			.type = VGE_PIPELINE_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -110,21 +124,43 @@ void GameStart(void *data) {
 			.type = VGE_PIPELINE_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
 			.count = 1,
 			.stage = VGE_PIPELINE_DESCRIPTOR_STAGE_FRAGMENT
+		},
+		{
+			.binding = 2,
+			.type = VGE_PIPELINE_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			.count = 1,
+			.stage = VGE_PIPELINE_DESCRIPTOR_STAGE_FRAGMENT
+		},
+		{
+			.binding = 3,
+			.type = VGE_PIPELINE_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			.count = 1,
+			.stage = VGE_PIPELINE_DESCRIPTOR_STAGE_FRAGMENT
+		},
+		{
+			.binding = 4,
+			.type = VGE_PIPELINE_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			.count = 1,
+			.stage = VGE_PIPELINE_DESCRIPTOR_STAGE_FRAGMENT
+		},
+		{
+			.binding = 5,
+			.type = VGE_PIPELINE_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			.count = 1,
+			.stage = VGE_PIPELINE_DESCRIPTOR_STAGE_FRAGMENT
 		}
 	};
 
 	vgePipelineGraphicsCreateInfo pipelineInfo = {
-		.device = context->device,
+		.context = info->context,
+		.swapchain = info->swapChain,
 		.fragShaderPath = "shaders_bin/objDefault.frag.spv",
 		.vertShaderPath = "shaders_bin/objDefault.vert.spv",
-		.colorFormat = VK_FORMAT_R8G8B8A8_SRGB,
-		.viewportExtent = context->swapChainExtent,
-		.renderPass = context->renderPass,
 		.numVertexDescriptions = 1,
 		.vertexDescriptionInfo = &vertexInputDescriptor,
 		.numVertexInputDescriptions = 3,
 		.vertexInputInfo = vertexInputInfo,
-		.numDescriptorLayoutInfo = 2,
+		.numDescriptorLayoutInfo = 6,
 		.descriptorLayoutInfo = descriptorLayoutInfo
 	};
 
@@ -137,13 +173,7 @@ void GameStart(void *data) {
 
 	info->pitch = 0.0f;info->yaw = 0.0f;
 
-	info->frameContexCount = info->graphics->swapChainImageCount;
-
-	info->frameContext = createFrameContext(info->frameContexCount, info->graphics->swapChainImageCount, info->graphics->device, info->graphics->commandPool);
-
-	info->model = parseObjFile(context, pipeline, "model/monkey.obj");
-
-	vgeBindingInfo infoBinding [2] = {
+	vgeBindingInfo infoBinding [6] = {
 		{
 			.binding = 0,
 			.bindingType = VGE_BINDING_TYPE_UNIFORM_BUFFER,
@@ -157,19 +187,74 @@ void GameStart(void *data) {
 			.bindingType = VGE_BINDING_TYPE_TEXTURE,
 			.textureInfo = {
 				.option = VGE_TEXTURE_NOT_INITIALIZED,
-				.TexturePath = "textures/img.png"
+				.TexturePath = "textures/heavy.png"
+			}
+		},
+		{
+			.binding = 2,
+			.bindingType = VGE_BINDING_TYPE_TEXTURE,
+			.textureInfo = {
+				.option = VGE_TEXTURE_NOT_INITIALIZED,
+				.TexturePath = "textures/heavy.png"
+			}
+		},
+		{
+			.binding = 3,
+			.bindingType = VGE_BINDING_TYPE_UNIFORM_BUFFER,
+			.uniformInfo = {
+				.option = VGE_UNIFORM_CREATE_BUFFER,
+				.sizeUniform = sizeof(float)
+			}
+		},
+		{
+			.binding = 4,
+			.bindingType = VGE_BINDING_TYPE_UNIFORM_BUFFER,
+			.uniformInfo = {
+				.option = VGE_UNIFORM_CREATE_BUFFER,
+				.sizeUniform = sizeof(vec3) * 4
+			}
+		},
+		{
+			.binding = 5,
+			.bindingType = VGE_BINDING_TYPE_UNIFORM_BUFFER,
+			.uniformInfo = {
+				.option = VGE_UNIFORM_CREATE_BUFFER,
+				.sizeUniform = sizeof(vec3)
 			}
 		}
 	};
 
+
 	vgeDescriptorInfo descriptorInfo = {
-		.numBindings = 2,
+		.numBindings = 6,
 		.bindings = infoBinding,
 		.pipeline = info->graphicsP
 	};
 
-	info->descriptor = createVgeDescriptorSet(context, &descriptorInfo);
+	info->descriptor = createVgeDescriptorSet(info->context, &descriptorInfo);
+	float *shiny = mapUniformBindingData(info->context, info->descriptor, 3, 0, sizeof(float));
+	*shiny = 32.0f;
+	unmapUniformBindingData(info->context, info->descriptor, 3);
+	updateUniformBinding(info->context, info->descriptor, 3);
+
+	float *lightInfo = mapUniformBindingData(info->context, info->descriptor, 4, sizeof(vec3), 3 * sizeof(vec3));
+	vec3 LightInfo[1] = {
+		{1.0f, 1.0f, 1.0f}
+	};
+	memcpy(lightInfo, LightInfo, sizeof(vec3) * 1);
+	glm_vec3_print(lightInfo, stdout);
+	unmapUniformBindingData(info->context, info->descriptor, 4);
+	updateUniformBinding(info->context, info->descriptor, 4);
+
 	info->timeLastFrame = vgeGetTimeSinceStart();
+
+	info->model = parseObjFile(info->context, info->graphicsP, "model/Untitled.obj");
+
+	int32_t x, y;
+	vgeGetContentSize(info->window, &x, &y);
+	info->camera = vgeCameraCreate(glm_rad(-90.0f), 0.0f, 60.0f, (float)x / (float)y, 0.1f, 3000.0f);
+	vec3 pos = {0.0f, 0.0f, 3.0f};
+	cameraMove(info->camera, pos);
 }
 void GameLoop(void *data) {
 	pGameInfo info = data;
@@ -178,46 +263,82 @@ void GameLoop(void *data) {
 	info->deltaTime = currentFrame - info->timeLastFrame;
 	info->timeLastFrame = currentFrame;
 
-	startFrame(&info->frameContext[info->currentFrame], info->graphics->device, info->graphics->swapchain, info->graphics->swapChainImages);
+	pVgeKeyboard keyboard = vgeWindowGetKeyboard(info->window);
 
-	VkClearValue clearColor = {
-		.color = {
-			(float) cos(vgeGetTimeSinceStart()),
-			((float) cos(vgeGetTimeSinceStart() * 2.0f) + 1.0f) / 2.0f,
-			((float) sin(vgeGetTimeSinceStart() * 2.0f) + 1.0f) / 2.0f,
-			1.0f
-		}
-	};
+	if (keyboard->keys['W']) {
+		vec3 front, dir;
+		cameraGetFront(info->camera, front);
+		glm_vec3_scale(front, (float)info->deltaTime * 10.0f, dir);
+		dir[1] = 0.0f;
+		cameraMove(info->camera, dir);
+	}
+	if (keyboard->keys['S']) {
+		vec3 front, dir;
+		cameraGetFront(info->camera, front);
+		glm_vec3_scale(front, (float)info->deltaTime * -10.0f, dir);
+		dir[1] = 0.0f;
+		cameraMove(info->camera, dir);
+	}
+	if (keyboard->keys['A']) {
+		vec3 front;
+		cameraGetFront(info->camera, front);
+		vec3 up = {0.0f, 1.0f, 0.0f};
+		glm_cross(front, up, front);
+		glm_vec3_normalize(front);
+		glm_vec3_scale(front, (float)info->deltaTime * -10.0f, front);
+		cameraMove(info->camera, front);
+	}
+	if (keyboard->keys['D']) {
+		vec3 front;
+		cameraGetFront(info->camera, front);
+		vec3 up = {0.0f, 1.0f, 0.0f};
+		glm_cross(front, up, front);
+		glm_vec3_normalize(front);
+		glm_vec3_scale(front, (float)info->deltaTime * 10.0f, front);
+		cameraMove(info->camera, front);
+	}
+	if (keyboard->keys['Z']) {
+		vec3 up = {0.0f, (float)info->deltaTime * -10.0f, 0.0f};
+		cameraMove(info->camera, up);
+	}
+	if (keyboard->keys[' ']) {
+		vec3 up = {0.0f, (float)info->deltaTime * 10.0f, 0.0f};
+		cameraMove(info->camera, up);
+	}
+	if (keyboard->keys['C']) {
+		vgeSetWindowCaptureMouse(info->window,true);
+	}
+	if (keyboard->keys['V']) {
+			vgeSetWindowCaptureMouse(info->window,false);
+	}
 
-	renderPassStart(&info->frameContext[info->currentFrame], info->graphics->renderPass, info->graphics->swapChainExtent, info->graphics->frameBuffers, &clearColor);
+	startFrame(info->context, info->swapChain);
 
 	mat4 mat = GLM_MAT4_IDENTITY_INIT;
-	float scale = 1.0f;
-	vec3 scaleVec = {scale, scale, scale};
-	glm_scale(mat, scaleVec);
-	mat4 *model = mapUniformBindingData(info->graphics, info->descriptor, 0, 0, sizeof(mat4));
+	mat4 *model = mapUniformBindingData(info->context, info->descriptor, 0, 0, sizeof(mat4));
 	memcpy(model, mat, sizeof(mat));
-	unmapUniformBindingData(info->graphics, info->descriptor, 0);
+	unmapUniformBindingData(info->context, info->descriptor, 0);
+	updateUniformBinding(info->context, info->descriptor, 0);
 
+	float *light = mapUniformBindingData(info->context, info->descriptor, 4, 0, sizeof(vec3));
+	vec3 lightPos = {0.0f, 3.0f, 3.0f};
+	memcpy(light, lightPos, sizeof(vec3));
+	unmapUniformBindingData(info->context, info->descriptor, 4);
+	updateUniformBinding(info->context, info->descriptor, 4);
 
-	pVgeCamera camera = vgeCameraCreate(glm_rad(-90.0f), 0.0f, 90.0f, 1280.0f / 720.0f, 0.1f, 3000.0f);
-	vec3 newPos = {0.0f, 0.0f, 2.0f};
-	cameraSetPositon(camera, newPos);
-	mat4 *view = mapUniformBindingData(info->graphics, info->descriptor, 0, sizeof(mat4), sizeof(mat4));
-	memcpy(view, getViewMatrix(camera), sizeof(mat));
-	unmapUniformBindingData(info->graphics, info->descriptor, 0);
-	mat4 *perspective = mapUniformBindingData(info->graphics, info->descriptor, 0, 2 * sizeof(mat4), sizeof(mat4));
-	memcpy(perspective, getPerspectiveMatrix(camera), sizeof(mat));
-	unmapUniformBindingData(info->graphics, info->descriptor, 0);
-	updateUniformBinding(info->graphics, info->descriptor, 0);
+	float *cameraPos = mapUniformBindingData(info->context, info->descriptor, 5, 0, sizeof(vec3));
+	memcpy(cameraPos, cameraGetPos(info->camera), sizeof(vec3));
+	unmapUniformBindingData(info->context, info->descriptor, 5);
+	updateUniformBinding(info->context, info->descriptor, 5);
+
+	cameraBindMatrices(info->camera, info->context, info->descriptor, 0, sizeof(mat4));
 
 	for (uint64_t i = 0; i < vgeVectorGetSize(info->model); i++) {
 		pObjModel model1 = vgeVectorGetElement(info->model, i);
-		drawModel(info->graphics, &info->frameContext[info->currentFrame], info->graphicsP, model1->model, info->descriptor);
+		drawModel(info->context, info->swapChain, info->graphicsP, model1->model, info->descriptor);
 	}
 
-	renderPassEnd(&info->frameContext[info->currentFrame]);
-	endFrame(&info->frameContext[info->currentFrame], info->graphics->swapchain, info->graphics->queues[1], info->graphics->queues[0]);
+	endFrame(info->context, info->swapChain);
 
 	if (info->timeElapsed > 1.0f) {
 		printf("fps: %d\n", info->frameCount);
@@ -227,29 +348,27 @@ void GameLoop(void *data) {
 	info->timeElapsed += info->deltaTime;
 	info->frameCount++;
 
-	info->currentFrame = (info->currentFrame + 1) % info->graphics->swapChainImageCount;
-
 	vgeHandleEvents();
 }
 
 uint32_t exitCondition(void *info) {
-	return !vgeIsWindowClosed(((pGameInfo)info)->window);
+	uint32_t cond = !vgeIsWindowClosed(((pGameInfo)info)->window);
+	return cond;
 }
 
 void GameEnd(void *data) {
 	pGameInfo info = (pGameInfo)data;
-	destroyFrameContext(info->frameContext, info->graphics->device, info->frameContexCount, info->graphics->swapChainImageCount);
 
-	for (uint64_t i = 0; i < vgeVectorGetSize(info->model); i++) {
+	/*for (uint64_t i = 0; i < vgeVectorGetSize(info->model); i++) {
 		pObjModel model = vgeVectorGetElement(info->model, i);
-		destroyVgeModel(info->graphics, model->model);
+		destroyVgeModel(info->context, model->model);
 	}
 
-	destroyGraphicsPipeline(info->graphics->device, info->graphicsP);
-	destroyVulkan(info->graphics);
+	destroyGraphicsPipeline(info->context->device, info->graphicsP);
+	destroyVulkan(info->context);*/
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
 	startEngine(sizeof(gameInfo));
 }
 

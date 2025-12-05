@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.31)
 project(vge C ASM)
 
+if (MSVC)
+	add_compile_options(/W4)
+else()
+	add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 set(CMAKE_C_STANDARD 23)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
@@ -138,7 +144,7 @@ message("==================================================")
 add_custom_target(CompileShaders ALL DEPENDS ${SPIRV_OUTPUTS})
 #--------------------------------------------------------------------------------------------------
 
-# External Deps Section ---------------------------------------------------------------------------
+# External Dependencies Section -------------------------------------------------------------------
 
 if (WIN32)
 	add_compile_definitions(VGE_PLATFORM_WIN32)
@@ -172,7 +178,7 @@ if (Vulkan_FOUND)
 endif ()
 # -------------------------------------------------------------------------------------------------
 
-# Add Deps Section --------------------------------------------------------------------------------
+# Add Dependencies Section ------------------------------------------------------------------------
 file(GLOB_RECURSE SRC_FILES "src/*.c" "src/*.h" "src/*.s")
 
 message("===================SOURCE FILES===================")

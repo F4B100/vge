@@ -18,8 +18,6 @@ void vgeSetStartTime();
 
 double vgeGetTimeSinceStart();
 
-void vgeGetContentSize(pVgeWindow window, uint32_t *width, uint32_t *height);
-
 void vgeHandleEvents();
 
 uint32_t vgeIsWindowClosed(pVgeWindow window);
@@ -29,11 +27,31 @@ uint32_t vgeIsWindowClosed(pVgeWindow window);
 void vgeSetCallbackData(pVgeWindow window, void *data);
 
 void vgeSetWindowSizeCallback(pVgeWindow window, void (*func)(pVgeWindow window, void *data, int32_t width, int32_t height));
-
 void vgeSetMouseMoveCallback(pVgeWindow window, void (*func)(pVgeWindow window, void *data,int32_t width, int32_t height));
+void vgeSetMouseLeftDownCallback(pVgeWindow window, void (*func)(pVgeWindow window, void *data,int32_t width, int32_t height));
+void vgeSetKeyDownCallback(pVgeWindow window, void (*func)(pVgeWindow window, void *data, int8_t key));
 
 // Get section
 void vgeGetWindowName(pVgeWindow window, char **name);
+
+void vgeGetContentSize(pVgeWindow window, int32_t *width, int32_t *height);
+void vgeGetWindowSize(pVgeWindow window, int32_t *width, int32_t *height);
+
+void vgeGetWindowPos(pVgeWindow window, int32_t *x, int32_t *y);
+
+// Set section
+void vgeSetWindowCaptureMouse(pVgeWindow window, uint32_t capture);
+
+
+// input section
+void setMousePos(int32_t x, int32_t y);
+void setMousePosWindow(pVgeWindow window, int32_t x, int32_t y);
+
+typedef struct VgeKeyboard {
+	uint8_t keys[256];
+} vgeKeyboard, *pVgeKeyboard;
+
+pVgeKeyboard vgeWindowGetKeyboard(pVgeWindow window);
 
 #ifdef VGE_GRAPHICS_VULKAN
 #include <vulkan/vulkan.h>

@@ -5,6 +5,7 @@
 #ifndef VULKANINSTANCE_H
 #define VULKANINSTANCE_H
 
+#include <vulkan/vulkan.h>
 #include "vulkanDefs.h"
 #ifndef NDEBUG
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
@@ -12,6 +13,6 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 #endif
 
-void createVulkanInstance(const char *windowName, pVulkanContext context);
+void createVulkanInstance(const char *appName, pVulkanContext context);
 
 #endif //VULKANINSTANCE_H

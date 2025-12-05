@@ -15,7 +15,7 @@ typedef struct {
 } ThreadStartWrapper;
 
 DWORD vgeThreadStart(LPVOID param) {
-	ThreadStartWrapper *wrapper = (ThreadStartWrapper *)param;
+	ThreadStartWrapper *wrapper = param;
 	wrapper->func(wrapper->arg);
 	free(wrapper);
 	return 0;

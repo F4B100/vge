@@ -5,17 +5,12 @@
 #ifndef VULKANTEXTURE_H
 #define VULKANTEXTURE_H
 
+#include "vulkanDefs.h"
 #include "vulkanBuffer.h"
 #include "vulkanCommands.h"
 
-typedef struct VgeVulkanTexture {
-	VkImage image;
-	VkDeviceMemory memory;
-	VkImageView imageView;
-	VkSampler sampler;
-} vgeVulkanTexture, *pVgeVulkanTexture;
-
 pVgeVulkanTexture createVgeVulkanTexture(pVulkanContext context, const char * path);
+pVgeDepthBuffer createDepthBuffer(pVulkanContext context, uint32_t width, uint32_t height);
 void destroyVulkanTexture(pVulkanContext context, pVgeVulkanTexture texture);
 
 #endif //VULKANTEXTURE_H

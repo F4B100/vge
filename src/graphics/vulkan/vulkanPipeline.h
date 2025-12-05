@@ -41,10 +41,8 @@ typedef struct VgeDescriptorLayoutInfo {
 typedef struct VgePipelineGraphicsCreateInfo_t {
 	char * vertShaderPath;
 	char * fragShaderPath;
-	VkExtent2D viewportExtent;
-	VkDevice device;
-	VkFormat colorFormat;
-	VkRenderPass renderPass;
+	pVulkanContext context;
+	pVulkanSwapchain swapchain;
 	uint64_t numVertexDescriptions;
 	pVgeVertexDescription vertexDescriptionInfo;
 	uint64_t numVertexInputDescriptions;
@@ -64,7 +62,6 @@ typedef struct VgePipelineGraphics_t {
 
 vgePipelineGraphics *createGraphicsPipeline(pVgePipelineGraphicsCreateInfo info);
 void createDescriptorPool(VkDevice device, VkDescriptorPool *toCreate);
-void createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkRenderPass *toCreate);
 void destroyGraphicsPipeline(VkDevice device, vgePipelineGraphics *pipeline);
 
 #endif //VULKANPIPELINE_H

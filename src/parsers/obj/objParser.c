@@ -11,55 +11,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_LINE_LENGTH 1024
-#define LINES_PER_CHUNK 1000
+#include "../../dataStructs/list.h"
+#include "../utils/utils.h"
 
-char *read_1000_lines(FILE *file, uint64_t *out_len) {
-	char line[MAX_LINE_LENGTH];
-	uint64_t buffer_size = MAX_LINE_LENGTH * LINES_PER_CHUNK;
-	char *buffer = malloc(buffer_size);
-	if (!buffer) return NULL;
-
-	uint64_t  pos = 0;
-	int lines_read = 0;
-
-	while (lines_read < LINES_PER_CHUNK && fgets(line, sizeof(line), file)) {
-		uint64_t len = strlen(line);
-
-		if (pos + len >= buffer_size) {
-			buffer_size *= 2;
-			char *new_buffer = realloc(buffer, buffer_size);
-			if (!new_buffer) {
-				free(buffer);
-				return NULL;
-			}
-			buffer = new_buffer;
-		}
-
-		memcpy(buffer + pos, line, len);
-		pos += len;
-		lines_read++;
-	}
-
-	// Null-terminate buffer
-	if (pos >= buffer_size) {
-		// Ensure space for null terminator
-		char *new_buffer = realloc(buffer, buffer_size + 1);
-		if (!new_buffer) {
-			free(buffer);
-			return NULL;
-		}
-		buffer = new_buffer;
-		buffer_size += 1;
-	}
-	buffer[pos] = '\0';
-
-	if (out_len) *out_len = pos;
-	return buffer;
-}
-
-pVgeVector parseObjFile(pVulkanContext context, pVgePipelineGraphics pipeline, char * filename) {
-	FILE *file = fopen(filename, "r");
+pObjModel parseObjFile(pVulkanContext context, pVgePipelineGraphics pipeline, char * filepath) {
+	FILE *file = fopen(filepath, "r");
 	if (file == NULL) {
 		printf("Error opening file\n");
 		return nullptr;
@@ -68,7 +24,7 @@ pVgeVector parseObjFile(pVulkanContext context, pVgePipelineGraphics pipeline, c
 	yyscan_t scanner = {};
 
 	if (objlex_init(&scanner)) {
-		printf("Error initializing parser for file: %s\n", filename);
+		printf("Error initializing parser for file: %s\n", filepath);
 		fclose(file);
 		return nullptr;
 	}
@@ -76,22 +32,21 @@ pVgeVector parseObjFile(pVulkanContext context, pVgePipelineGraphics pipeline, c
 
 	parserContext parserContext = {};
 
-    parserContext.offsets = vgeVectorInit(sizeof(objOffsets));
-    parserContext.faceIndices = vgeVectorInit(sizeof(ivec3));
-	parserContext.model.vertices = vgeVectorInit(sizeof(vec3));
-	parserContext.model.textures = vgeVectorInit(sizeof(vec2));
-	parserContext.model.normals = vgeVectorInit(sizeof(vec3));
-	parserContext.model.faces = vgeVectorInit(sizeof(objFace));
-	parserContext.model.indices = vgeVectorInit(sizeof(uint32_t));
+	parserContext.offsets = ListAlloc(sizeof(objOffsets), 0);
+	parserContext.faceIndices = ListAlloc(sizeof(ivec3), 0);
+	parserContext.model.vertices = ListAlloc(sizeof(vec3), 0);
+	parserContext.model.textures = ListAlloc(sizeof(vec2), 0);
+	parserContext.model.normals = ListAlloc(sizeof(vec3), 0);
+	parserContext.model.faces = ListAlloc(sizeof(objFace), 0);
+	parserContext.model.indices = ListAlloc(sizeof(uint32), 0);;
 
-	char *buff = NULL;
 	uint64_t buffLen = 0;
 	while (true) {
-		buff = read_1000_lines(file, &buffLen);
+		char *buff = read_lines(file, &buffLen);
 		if (buff == NULL || buffLen == 0) {
 			break;
 		}
-		obj_scan_bytes(buff, buffLen, scanner);
+		obj_scan_bytes(buff, (int)buffLen, scanner);
 		objparse(&parserContext, scanner);
 		free(buff);
 	}
@@ -99,7 +54,7 @@ pVgeVector parseObjFile(pVulkanContext context, pVgePipelineGraphics pipeline, c
 	int result = objparse(&parserContext, scanner);
 
 	if (result) {
-		printf("Error parsing for file: %s\n", filename);
+		printf("Error parsing for file: %s\n", filepath);
 	}
 
 	objlex_destroy(scanner);
@@ -107,14 +62,16 @@ pVgeVector parseObjFile(pVulkanContext context, pVgePipelineGraphics pipeline, c
 
 	if (result != 0) {
 		fprintf(stderr, "Parse failed.\n");
-		return NULL;
+		return nullptr;
 	}
 
-	pVgeVector toReturn = vgeVectorInit(sizeof(objModel));
-	for (uint64_t i = 0; i < vgeVectorGetSize(parserContext.offsets) - 1; i++) {
-		pObjModel model = vgeVectorAppendEmpty(toReturn);
-		model->name = ((pObjOffsets)vgeVectorGetElement(parserContext.model.faces, i))->name;
-		pObjOffsets offsets= vgeVectorGetElement(parserContext.offsets, i + 1);
+	pObjModel toReturn = ListAlloc(sizeof(objModel), 0);
+	uint64_t size = listGetNumElems(parserContext.offsets);
+	listExtend(toReturn, size);
+	for (uint64_t i = 0; i < size - 1; i++) {
+		pObjModel model = &listGetLast(model);
+		model->name = ((pObjOffsets)&parserContext.model.faces[i])->name;
+		pObjOffsets offsets= &parserContext.offsets[i + 1];
 
 		vgeModelCreateInfo info = {};
 
@@ -122,23 +79,23 @@ pVgeVector parseObjFile(pVulkanContext context, pVgePipelineGraphics pipeline, c
 
 		vgeVertexInfo vertexInfo = {
 			.numVertices = offsets->vertexOffset,
-			.data = vgeVectorGetData(parserContext.model.faces),
-			.sizeVertex = vgeVectorGetSizeElement(parserContext.model.faces)
+			.data = parserContext.model.faces,
+			.sizeVertex = sizeof(objFace)
 		};
 
 		info.vertexInfo = &vertexInfo;
 
 		vgeIndexInfo indexInfo = {
 			.numIndexes = offsets->indexOffset,
-			.data = vgeVectorGetData(parserContext.model.indices),
-			.sizeIndex = vgeVectorGetSizeElement(parserContext.model.indices)
+			.data = parserContext.model.indices,
+			.sizeIndex = sizeof(uint32)
 		};
 
 		info.indexInfo = &indexInfo;
 
 		model->model = createVgeModel(context, &info);
 	}
-	pObjModel model = vgeVectorAppendEmpty(toReturn);
+	pObjModel model = &listGetLast(model);
 
 	model->name = ((pObjOffsets)vgeVectorGetLast(parserContext.model.faces))->name;
 

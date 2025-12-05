@@ -14,7 +14,7 @@ char *deviceExtensions[] = {
 };
 
 uint8_t isPhysicalDeviceSuitable(pVulkanContext context, VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties *physicalDeviceProperties) {
-    queueFamilyIndices* queues = searchQueueFamilies(physicalDevice, context->surface);
+    queueFamilyIndices* queues = searchQueueFamilies(physicalDevice);
 
     uint8_t isSuitable = isQueueFamiliesComplete(queues);
 
@@ -22,20 +22,12 @@ uint8_t isPhysicalDeviceSuitable(pVulkanContext context, VkPhysicalDevice physic
 
     isSuitable &= checkDeviceExtensionSupport(physicalDevice);
 
-    swapChainSupportDetails *details = querySwapChainSupport(physicalDevice, context->surface);
-
-    isSuitable &= details->presentModeCount != 0 && details->formatCount != 0;
-
-    freeSwapChainSupportDetails(details);
-
-    isSuitable &= physicalDeviceProperties->deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ||
+    isSuitable &= physicalDeviceProperties->deviceType != VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ||
         physicalDeviceProperties->deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
 
 	VkPhysicalDeviceFeatures features;
 
 	vkGetPhysicalDeviceFeatures(physicalDevice, &features);
-
-	isSuitable &= features.samplerAnisotropy;
 
     return isSuitable;
 }

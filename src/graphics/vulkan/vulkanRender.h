@@ -4,34 +4,22 @@
 
 #ifndef VULKANRENDER_H
 #define VULKANRENDER_H
-
+#include <vulkan/vulkan.h>
 #include "vulkanDefs.h"
 #include "../model/modelStructs.h"
 #include "../model/modelDescriptors.h"
 #include "vulkanPipeline.h"
 
-typedef struct SwapChainSem {
-	VkSemaphore renderFinishedSemaphore;
-} swapChainSem;
+frameContext *createFrameContext(pVulkanContext context, pVulkanSwapchain swapchain);
+void destroyFrameContext(pVulkanContext context, pVulkanSwapchain swapchain);
 
-typedef struct FrameContext {
-	uint32_t imageIndex;
-	VkCommandBuffer commandBuffer;
-	VkSemaphore imageAvailableSemaphore;
-	swapChainSem *swapSemaphores;
-	VkFence RenderFinishedFence;
-} frameContext;
+void startFrame(pVulkanContext context, pVulkanSwapchain swapchain);
 
-frameContext *createFrameContext(uint32_t numberFrame, uint32_t numberImages, VkDevice device, VkCommandPool commandPool) ;
-void destroyFrameContext(frameContext *frameContext, VkDevice device, uint32_t numberFrames, uint32_t numberImages);
+void renderPassStart(pVulkanContext context, pVulkanSwapchain swapchain);
+void renderPassEnd(pVulkanSwapchain swapchain);
 
-void startFrame(frameContext *frameContext, VkDevice device, VkSwapchainKHR swapChain, VkImage *swapChainImages);
+void drawModel(pVulkanContext context, pVulkanSwapchain swapchain, pVgePipelineGraphics graphicsPipeline, pVgeModel model, pVgeDescriptor descriptor);
 
-void renderPassStart(frameContext *frameContext, VkRenderPass renderPass, VkExtent2D extent, VkFramebuffer *frameBuffers, VkClearValue *clearValues);
-void renderPassEnd(frameContext *frameContext);
-
-void drawModel(pVulkanContext context, frameContext *frameContext, pVgePipelineGraphics graphicsPipeline, pVgeModel model, pVgeDescriptor descriptor);
-
-void endFrame(frameContext *frameContext, VkSwapchainKHR swapChain, VkQueue presentQueue, VkQueue graphicsQueue);
+void endFrame(pVulkanContext context, pVulkanSwapchain swapchain);
 
 #endif //VULKANRENDER_H

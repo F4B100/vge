@@ -6,10 +6,14 @@
 #define GAMEMAIN_H
 
 #define VGE_USE_VULKAN
-#include "../utils/vector/vgeVector.h"
+#include <stdint.h>
+
+typedef struct VgeGameEntity {
+	int x;
+} vgeGameEntity, *pVgeGameEntity;
 
 typedef struct VgeEngineInstance {
-	pVgeVector gameEntities;
+	pVgeGameEntity gameEntities;
 	void *globals;
 
 } vgeEngineInstance, *pVgeEngineInstance;

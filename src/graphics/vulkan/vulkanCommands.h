@@ -5,8 +5,11 @@
 #define VULKANCOMMANDS_H
 #ifdef VGE_GRAPHICS_VULKAN
 #include "vulkanDefs.h"
+#include "vulkanQueues.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-void createCommandPool(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkDevice device, uint32_t queueFamilyIndex, VkCommandPool *toCreate);
+VkCommandPool createCommandPool(pVulkanContext context, uint32_t queueFamilyIndex);
 VkCommandBuffer *createCommandBuffer(uint32_t numBuffers, VkCommandPool commandPool, VkDevice device);
 
 VkCommandBuffer beginSingleTimeCommand(pVulkanContext context);

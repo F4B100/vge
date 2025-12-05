@@ -5,6 +5,7 @@
 #ifndef VULKANSWAPCHAIN_H
 #define VULKANSWAPCHAIN_H
 
+#include "cglm/call/ivec4.h"
 #include "vulkanDefs.h"
 
 typedef struct SwapChainSupportDetails {
@@ -16,24 +17,25 @@ typedef struct SwapChainSupportDetails {
 	VkPresentModeKHR *presentModes;
 } swapChainSupportDetails;
 
-void createFullSwapChain(VkRenderPass renderPass, VkPhysicalDevice physicalDevice, VkDevice device,
-	VkSurfaceKHR surface, pVgeWindow window, VkExtent2D *swapExtent, VkSwapchainKHR*toCreate, uint32_t *numImages,
-	VkImage **swapImages, VkFormat swapFormat, VkImageView **swapImageViews, VkFramebuffer**frameBuffers);
+pVulkanSwapchain createFullSwapChain(pVulkanContext context, pVgeWindow window);
+void resizeSwapchain(pVulkanContext context, pVulkanSwapchain swapchain);
+void cleanupSwapChain(pVulkanContext context, pVulkanSwapchain swapchain);
 
-void cleanupSwapChain(VkFramebuffer *frameBuffers, VkImageView *imageViews, VkImage *swapChainImages,
-	VkSwapchainKHR swapChain, uint32_t swapChainImageCount, VkDevice device);
+void createRenderPass(pVulkanContext context, pVulkanSwapchain swapchain);
 
-void createSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, pVgeWindow window, VkExtent2D *swapExtent, VkSwapchainKHR *toCreate);
+VkSwapchainKHR createSwapChain(pVulkanContext context, pVulkanSwapchain swapchain, pVgeWindow window);
 
-uint32_t getSwapChainImages(VkSwapchainKHR swapchain, VkDevice device, VkImage **toStore);
+void getSwapChainImages(pVulkanContext context, pVulkanSwapchain swapchain);
 
-void createSwapChainImageViews(uint32_t imageCount, VkImage *swapChainImages, VkFormat format, VkDevice device, VkImageView **toCreate);
+void createSwapChainImageViews(pVulkanContext context, pVulkanSwapchain swapchain);
 
-void createFramebuffers(uint32_t imageCount, VkImageView *imageViews, VkDevice device, VkRenderPass renderPass, VkExtent2D extent, VkFramebuffer** toCreate) ;
+void createFramebuffers(pVulkanContext context, pVulkanSwapchain swapchain);
 
-swapChainSupportDetails* createSwapChainSupportDetails(const uint32_t sizeFormats, const uint32_t sizeModes);
+swapChainSupportDetails* createSwapChainSupportDetails(uint32_t sizeFormats, uint32_t sizeModes);
 void freeSwapChainSupportDetails(swapChainSupportDetails* details);
 swapChainSupportDetails* querySwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+
+void setSwapClearValue(pVulkanSwapchain swapchain, vec4 clearColor);
 
 uint32_t chooseSwapSurfaceFormat(swapChainSupportDetails *supportDetails);
 uint32_t chooseSwapPresentMode(swapChainSupportDetails *supportDetails);

@@ -3,9 +3,6 @@
 //
 
 #include "modelStructs.h"
-#include <memory.h>
-#include "../vulkan/vulkanBuffer.h"
-
 
 pVgeModel createVgeModel(pVulkanContext context, pVgeModelCreateInfo modelCreateInfo) {
 	pVgeModel result = calloc(sizeof(vgeModel), 1);

@@ -71,54 +71,6 @@ VkShaderModule createShaderModule(VkDevice device, spirVCode *code) {
     return shaderModule;
 }
 
-void createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkRenderPass *toCreate) {
-    VkAttachmentDescription colorAttachment = {
-        .format = swapChainImageFormat,
-        .samples = VK_SAMPLE_COUNT_1_BIT,
-        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-        .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-        .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-    };
-
-    VkAttachmentReference colorAttachmentRef = {
-        .attachment = 0,
-        .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-    };
-
-    VkSubpassDescription subpass = {
-        .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-        .colorAttachmentCount = 1,
-        .pColorAttachments = &colorAttachmentRef
-
-    };
-
-    VkSubpassDependency dependency = {
-        .srcSubpass = VK_SUBPASS_EXTERNAL,
-        .dstSubpass = 0,
-        .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        .srcAccessMask = 0,
-        .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-    };
-
-    VkRenderPassCreateInfo renderPassInfo = {
-        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        .attachmentCount = 1,
-        .pAttachments = &colorAttachment,
-        .subpassCount = 1,
-        .pSubpasses = &subpass,
-        .dependencyCount = 1,
-        .pDependencies = &dependency
-    };
-
-    if (vkCreateRenderPass(device, &renderPassInfo, nullptr, toCreate) != VK_SUCCESS) {
-        printf("failed to create render pass!");
-    }
-}
-
 VkDescriptorSetLayout createDescriptorSetLayout(VkDevice device, pVgePipelineGraphicsCreateInfo info) {
     VkDescriptorSetLayoutBinding bindings[info->numDescriptorLayoutInfo];
 
@@ -230,11 +182,11 @@ vgePipelineGraphics *createGraphicsPipeline(pVgePipelineGraphicsCreateInfo info)
     spirVCode *codeFrag = readSPIRVFile(info->fragShaderPath);
 
     VkShaderModule vertShaderModule = createShaderModule(
-        info->device,
+        info->context->device,
         codeVert
     );
     VkShaderModule fragShaderModule = createShaderModule(
-        info->device,
+        info->context->device,
         codeFrag
     );
 
@@ -268,26 +220,25 @@ vgePipelineGraphics *createGraphicsPipeline(pVgePipelineGraphicsCreateInfo info)
     VkViewport viewport = {
         .x = 0.0f,
         .y = 0.0f,
-        .width = (float) info->viewportExtent.width,
-        .height = (float) info->viewportExtent.height,
+        .width = (float) info->swapchain->swapChainExtent.width,
+        .height = (float) info->swapchain->swapChainExtent.height,
         .minDepth = 0.0f,
         .maxDepth = 1.0f
     };
 
     VkRect2D scissor = {
         .offset = {0, 0},
-        .extent = info->viewportExtent
+        .extent = info->swapchain->swapChainExtent
     };
 
     VkDynamicState dynamicStates[] = {
         VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR,
-    	VK_DYNAMIC_STATE_LINE_WIDTH
+        VK_DYNAMIC_STATE_SCISSOR
     };
 
     VkPipelineDynamicStateCreateInfo dynamicState = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-        .dynamicStateCount = 3,
+        .dynamicStateCount = 2,
         .pDynamicStates = dynamicStates
     };
 
@@ -301,16 +252,13 @@ vgePipelineGraphics *createGraphicsPipeline(pVgePipelineGraphicsCreateInfo info)
 
     VkPipelineRasterizationStateCreateInfo rasterizer = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-        .depthClampEnable = VK_TRUE,
+        .depthClampEnable = VK_FALSE,
         .rasterizerDiscardEnable = VK_FALSE,
         .polygonMode = VK_POLYGON_MODE_FILL,
-        .lineWidth = 5.0f,
-        .cullMode = VK_CULL_MODE_FRONT_BIT,
-        .frontFace = VK_FRONT_FACE_CLOCKWISE,
+        .lineWidth = 1.0f,
+        .cullMode = VK_CULL_MODE_BACK_BIT,
+        .frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
         .depthBiasEnable = VK_FALSE,
-        .depthBiasConstantFactor = 0.0f,
-        .depthBiasClamp = 0.0f,
-        .depthBiasSlopeFactor = 0.0
     };
 
     VkPipelineMultisampleStateCreateInfo multisampling = {
@@ -346,10 +294,10 @@ vgePipelineGraphics *createGraphicsPipeline(pVgePipelineGraphicsCreateInfo info)
         .blendConstants[3] = 0.0f
     };
 
-    VkDescriptorSetLayout descriptorSetLayout = createDescriptorSetLayout(info->device, info);
+    VkDescriptorSetLayout descriptorSetLayout = createDescriptorSetLayout(info->context->device, info);
 	VkDescriptorPool descriptorPool;
 
-	createDescriptorPool(info->device, &descriptorPool);
+	createDescriptorPool(info->context->device, &descriptorPool);
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -359,9 +307,20 @@ vgePipelineGraphics *createGraphicsPipeline(pVgePipelineGraphicsCreateInfo info)
         .pPushConstantRanges = nullptr
     };
 
-    if (vkCreatePipelineLayout(info->device, &pipelineLayoutInfo, nullptr, &newPipeline->pipelineLayout)) {
+    if (vkCreatePipelineLayout(info->context->device, &pipelineLayoutInfo, nullptr, &newPipeline->pipelineLayout)) {
         printf("failed to create pipeline layout!");
     }
+
+	VkPipelineDepthStencilStateCreateInfo depthStencil = {
+	    .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+    	.depthTestEnable = VK_TRUE,
+    	.depthWriteEnable = VK_TRUE,
+    	.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL,
+    	.depthBoundsTestEnable = VK_FALSE,
+    	.minDepthBounds = 0.0f,
+    	.maxDepthBounds = 1.0f,
+    	.stencilTestEnable = VK_FALSE,
+    };
 
     VkGraphicsPipelineCreateInfo pipelineInfo = {
         .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
@@ -372,22 +331,22 @@ vgePipelineGraphics *createGraphicsPipeline(pVgePipelineGraphicsCreateInfo info)
         .pViewportState = &viewportState,
         .pRasterizationState = &rasterizer,
         .pMultisampleState = &multisampling,
-        .pDepthStencilState = nullptr,
+        .pDepthStencilState = &depthStencil,
         .pColorBlendState = &colorBlending,
         .pDynamicState = &dynamicState,
         .layout = newPipeline->pipelineLayout,
-        .renderPass = info->renderPass,
+        .renderPass = info->swapchain->renderPass,
         .subpass = 0,
         .basePipelineHandle = VK_NULL_HANDLE,
         .basePipelineIndex = -1
     };
 
-    if (vkCreateGraphicsPipelines(info->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &newPipeline->pipeline) != VK_SUCCESS) {
+    if (vkCreateGraphicsPipelines(info->context->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &newPipeline->pipeline) != VK_SUCCESS) {
         printf("failed to create graphics pipeline!\n");
     }
 
-    newPipeline->fragShaderModule = vertShaderModule;
-    newPipeline->vertShaderModule = fragShaderModule;
+    newPipeline->fragShaderModule = fragShaderModule;
+    newPipeline->vertShaderModule = vertShaderModule;
 	newPipeline->descriptorSetLayout = descriptorSetLayout;
 	newPipeline->descriptorPool = descriptorPool;
 

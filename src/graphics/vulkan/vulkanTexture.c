@@ -6,6 +6,39 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+VkFormat findSupportedFormat(pVulkanContext context, const VkFormat *candidates, uint32_t numCand, VkImageTiling tiling, VkFormatFeatureFlags features) {
+	for (uint32_t i = 0; i < numCand; i++) {
+		VkFormat format = candidates[i];
+		VkFormatProperties props;
+		vkGetPhysicalDeviceFormatProperties(context->physicalDevice, format, &props);
+		if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+			return format;
+		} else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+			return format;
+		}
+	}
+	printf("Failed to find supported format!\n");
+	return VK_FORMAT_MAX_ENUM;
+}
+
+VkFormat findDepthFormat(pVulkanContext context) {
+	VkFormat formats[] = {
+		VK_FORMAT_D32_SFLOAT,
+		VK_FORMAT_D32_SFLOAT_S8_UINT,
+		VK_FORMAT_D24_UNORM_S8_UINT
+	};
+	return findSupportedFormat(
+		context,
+		formats, 3,
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+	);
+}
+
+bool hasStencilComponent(VkFormat format) {
+	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+}
+
 void transitionImageLayout(pVulkanContext context, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
 	VkCommandBuffer commandBuffer = beginSingleTimeCommand(context);
 
@@ -25,6 +58,16 @@ void transitionImageLayout(pVulkanContext context, VkImage image, VkFormat forma
 		.dstAccessMask = 0
 	};
 
+	if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+		if (hasStencilComponent(format)) {
+			barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		}
+	} else {
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	}
+
 	VkPipelineStageFlags sourceStage = 0;
 	VkPipelineStageFlags destinationStage = 0;
 
@@ -40,6 +83,12 @@ void transitionImageLayout(pVulkanContext context, VkImage image, VkFormat forma
 
 		sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	} else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 	} else {
 		printf("unsupported layout transition!");
 	}
@@ -119,7 +168,7 @@ void createImage(pVulkanContext context, uint32_t width, uint32_t height, VkForm
 	vkBindImageMemory(context->device, *image, *imageMemory, 0);
 }
 
-void initImageView(pVulkanContext context, pVgeVulkanTexture texture, VkFormat format) {
+void initImageView(pVulkanContext context, pVgeVulkanTexture texture, VkFormat format, VkImageAspectFlags flags) {
 	VkImageSubresourceRange subresourceRange = {
 		.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 		.baseMipLevel = 0,
@@ -201,11 +250,39 @@ pVgeVulkanTexture createVgeVulkanTexture(pVulkanContext context, const char *pat
 	copyBufferToImage(context, staging->buffer, texture->image, texWidth, texHeight);
 	transitionImageLayout(context, texture->image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-	initImageView(context, texture, VK_FORMAT_R8G8B8A8_SRGB);
+	initImageView(context, texture, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 	initSampler(context, texture);
 
 	destroyBuffer(context, staging);
 	return texture;
+}
+
+pVgeDepthBuffer createDepthBuffer(pVulkanContext context, uint32_t width, uint32_t height) {
+	pVgeDepthBuffer depthBuffer = calloc(sizeof(vgeDepthBuffer), 1);
+
+	vgeVulkanTexture tex;
+
+	VkFormat depthFormat = findDepthFormat(context);
+
+	createImage(
+		context,
+		width,
+		height,
+		depthFormat,
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		&tex.image,
+		&tex.memory
+	);
+
+	initImageView(context, &tex, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+	depthBuffer->image = tex.image;
+	depthBuffer->memory = tex.memory;
+	depthBuffer->imageView = tex.imageView;
+
+	transitionImageLayout(context, depthBuffer->image, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+	return depthBuffer;
 }
 
 void destroyVulkanTexture(pVulkanContext context, pVgeVulkanTexture texture) {
