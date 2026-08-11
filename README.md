@@ -1,1 +1,1 @@
-# Vge is a simple Vulkan graphics engine
+# Vge is a simple Vulkan graphics test
