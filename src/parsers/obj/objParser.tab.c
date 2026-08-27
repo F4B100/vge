@@ -520,8 +520,8 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    43,    43,    44,    48,    57,    66,    74,    81,    85,
-      89,    92,   159,   160,   164,   173,   182,   191
+       0,    43,    43,    44,    48,    58,    67,    75,    82,    86,
+      90,    93,   160,   161,   165,   174,   183,   192
 };
 #endif
 
@@ -1384,13 +1384,14 @@ yyreduce:
             (yyvsp[-1].f),
             (yyvsp[0].f)
         };
+        list
         vgeVectorAppend(context->model.vertices, vert);
     }
-#line 1390 "objParser.tab.c"
+#line 1391 "objParser.tab.c"
     break;
 
   case 5: /* line: VERTEX_NORMAL NUMBER NUMBER NUMBER  */
-#line 58 "objParser.y"
+#line 59 "objParser.y"
     {
         vec3 norm = {
             (yyvsp[-2].f),
@@ -1399,11 +1400,11 @@ yyreduce:
         };
         vgeVectorAppend(context->model.normals, norm);
     }
-#line 1403 "objParser.tab.c"
+#line 1404 "objParser.tab.c"
     break;
 
   case 6: /* line: VERTEX_TEXTURE NUMBER NUMBER  */
-#line 67 "objParser.y"
+#line 68 "objParser.y"
     {
         vec2 tex = {
             (yyvsp[-1].f),
@@ -1411,45 +1412,45 @@ yyreduce:
         };
         vgeVectorAppend(context->model.textures, tex);
     }
-#line 1415 "objParser.tab.c"
+#line 1416 "objParser.tab.c"
     break;
 
   case 7: /* line: OBJECT_NAME STRING  */
-#line 75 "objParser.y"
+#line 76 "objParser.y"
     {
         pObjOffsets offset = vgeVectorAppendEmpty(context->offsets);
         offset->name = (yyvsp[0].str);
         offset->vertexOffset = context->model.vertices->numElements;
         offset->indexOffset = context->model.indices->numElements;
     }
-#line 1426 "objParser.tab.c"
+#line 1427 "objParser.tab.c"
     break;
 
   case 8: /* line: MTL_NAME MTL_PATH  */
-#line 82 "objParser.y"
+#line 83 "objParser.y"
     {
         free((yyvsp[0].path));
     }
-#line 1434 "objParser.tab.c"
+#line 1435 "objParser.tab.c"
     break;
 
   case 9: /* line: USE_MATERIAL STRING  */
-#line 86 "objParser.y"
+#line 87 "objParser.y"
     {
         free((yyvsp[0].str));
     }
-#line 1442 "objParser.tab.c"
+#line 1443 "objParser.tab.c"
     break;
 
   case 10: /* line: SHADING INTEGER  */
-#line 90 "objParser.y"
+#line 91 "objParser.y"
     {
     }
-#line 1449 "objParser.tab.c"
+#line 1450 "objParser.tab.c"
     break;
 
   case 11: /* line: FACE vertices  */
-#line 93 "objParser.y"
+#line 94 "objParser.y"
     {
         pObjModelInfo model = &context->model;
 
@@ -1514,11 +1515,11 @@ yyreduce:
         vgeVectorFree(context->faceIndices);
         context->faceIndices = vgeVectorInit(sizeof(ivec3));
     }
-#line 1518 "objParser.tab.c"
+#line 1519 "objParser.tab.c"
     break;
 
   case 14: /* vertex: INTEGER  */
-#line 165 "objParser.y"
+#line 166 "objParser.y"
     {
         ivec3 vertexIndices = {
             (yyvsp[0].i),
@@ -1527,11 +1528,11 @@ yyreduce:
         };
         vgeVectorAppend(context->faceIndices, &vertexIndices);
     }
-#line 1531 "objParser.tab.c"
+#line 1532 "objParser.tab.c"
     break;
 
   case 15: /* vertex: INTEGER SLASH INTEGER  */
-#line 174 "objParser.y"
+#line 175 "objParser.y"
     {
         ivec3 vertexIndices = {
             (yyvsp[-2].i),
@@ -1540,11 +1541,11 @@ yyreduce:
         };
         vgeVectorAppend(context->faceIndices, &vertexIndices);
     }
-#line 1544 "objParser.tab.c"
+#line 1545 "objParser.tab.c"
     break;
 
   case 16: /* vertex: INTEGER SLASH SLASH INTEGER  */
-#line 183 "objParser.y"
+#line 184 "objParser.y"
     {
         ivec3 vertexIndices = {
             (yyvsp[-3].i),
@@ -1553,11 +1554,11 @@ yyreduce:
         };
         vgeVectorAppend(context->faceIndices, &vertexIndices);
     }
-#line 1557 "objParser.tab.c"
+#line 1558 "objParser.tab.c"
     break;
 
   case 17: /* vertex: INTEGER SLASH INTEGER SLASH INTEGER  */
-#line 192 "objParser.y"
+#line 193 "objParser.y"
     {
         ivec3 vertexIndices = {
             (yyvsp[-4].i),
@@ -1566,11 +1567,11 @@ yyreduce:
         };
         vgeVectorAppend(context->faceIndices, &vertexIndices);
     }
-#line 1570 "objParser.tab.c"
+#line 1571 "objParser.tab.c"
     break;
 
 
-#line 1574 "objParser.tab.c"
+#line 1575 "objParser.tab.c"
 
       default: break;
     }
@@ -1794,7 +1795,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 201 "objParser.y"
+#line 202 "objParser.y"
 
 
 void objerror(parserContext *context, yyscan_t scanner, const char *err) {

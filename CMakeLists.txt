@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.31)
-project(vge C ASM)
+project(vge C CXX ASM)
 
 if (MSVC)
 	add_compile_options(/W4)
@@ -171,6 +171,11 @@ CPMAddPackage(
 		GIT_TAG master
 		DOWNLOAD_ONLY YES
 )
+CPMAddPackage(
+		NAME assimp
+		GITHUB_REPOSITORY assimp/assimp
+		VERSION 6.0.4
+)
 add_library(stb INTERFACE)
 find_package(Vulkan REQUIRED)
 if (Vulkan_FOUND)
@@ -189,18 +194,19 @@ add_executable(vge main.c ${SRC_FILES})
 
 IF (WIN32)
 	target_link_options(vge PRIVATE -static -static-libgcc -lwinpthread)
-	target_link_libraries(vge PRIVATE cglm m stb Vulkan::Vulkan)
+	target_link_libraries(vge PRIVATE Vulkan::Vulkan)
 ENDIF ()
 
 IF (LINUX)
     find_package(PkgConfig REQUIRED)
 	pkg_check_modules(WAYLAND REQUIRED wayland-client)
-	target_link_libraries(vge PRIVATE cglm m stb Vulkan::Vulkan ${WAYLAND_LIBRARIES})
+	target_link_libraries(vge PRIVATE Vulkan::Vulkan ${WAYLAND_LIBRARIES})
 	target_link_options(vge PRIVATE -lwayland-client)
 	add_dependencies(vge Xdg)
 ENDIF ()
 
-target_include_directories(stb INTERFACE ${stb_SOURCE_DIR} ${cglm_SORCE_DIR})
+target_include_directories(vge INTERFACE ${stb_SOURCE_DIR} ${cglm_SORCE_DIR} ${assimp_SOURCE_DIR})
+target_link_libraries(vge PRIVATE stb m cglm assimp)
 add_dependencies(vge CompileShaders)
 add_dependencies(vge GenerateBison)
 add_dependencies(vge GenerateFlex)

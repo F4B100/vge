@@ -7,6 +7,7 @@
 #include "src/graphics/vulkan/vulkanRender.h"
 #include "src/graphics/vulkan/vulkanSwapChain.h"
 #include "src/parsers/obj/objParser.h"
+
 pVgeWindow parseWindowConfFile(char * filename);
 #include "src/utils/camera.h"
 
@@ -15,7 +16,7 @@ typedef struct GameInfo {
 	pVulkanContext context;
 	pVulkanSwapchain swapChain;
 	vgePipelineGraphics *graphicsP;
-	pVgeVector model;
+	//pVgeVector model;
 	pVgeDescriptor descriptor;
 	pVgeDescriptor descriptor2;
 
@@ -248,7 +249,7 @@ void GameStart(void *data) {
 
 	info->timeLastFrame = vgeGetTimeSinceStart();
 
-	info->model = parseObjFile(info->context, info->graphicsP, "model/Untitled.obj");
+	//info->model = parseObjFile(info->context, info->graphicsP, "model/Untitled.obj");
 
 	int32_t x, y;
 	vgeGetContentSize(info->window, &x, &y);
@@ -333,10 +334,12 @@ void GameLoop(void *data) {
 
 	cameraBindMatrices(info->camera, info->context, info->descriptor, 0, sizeof(mat4));
 
+	/*
 	for (uint64_t i = 0; i < vgeVectorGetSize(info->model); i++) {
 		pObjModel model1 = vgeVectorGetElement(info->model, i);
 		drawModel(info->context, info->swapChain, info->graphicsP, model1->model, info->descriptor);
 	}
+	*/
 
 	endFrame(info->context, info->swapChain);
 

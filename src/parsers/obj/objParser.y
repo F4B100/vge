@@ -52,6 +52,7 @@ line:
             $3,
             $4
         };
+        list
         vgeVectorAppend(context->model.vertices, vert);
     }
     | VERTEX_NORMAL NUMBER NUMBER NUMBER

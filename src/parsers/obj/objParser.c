@@ -97,37 +97,37 @@ pObjModel parseObjFile(pVulkanContext context, pVgePipelineGraphics pipeline, ch
 	}
 	pObjModel model = &listGetLast(model);
 
-	model->name = ((pObjOffsets)vgeVectorGetLast(parserContext.model.faces))->name;
+	model->name = listGetLast(parserContext.offsets).name;
 
 	vgeModelCreateInfo info = {};
 
 	info.pipeline = pipeline;
 
 	vgeVertexInfo vertexInfo = {
-		.numVertices = parserContext.model.faces->numElements,
-		.data = vgeVectorGetData(parserContext.model.faces),
-		.sizeVertex = vgeVectorGetSizeElement(parserContext.model.faces)
+		.numVertices = listGetNumElems(parserContext.model.faces),
+		.data = parserContext.model.faces,
+		.sizeVertex = listGetElemSize(parserContext.model.faces)
 	};
 
 	info.vertexInfo = &vertexInfo;
 
 	vgeIndexInfo indexInfo = {
-		.numIndexes = parserContext.model.indices->numElements,
-		.data = vgeVectorGetData(parserContext.model.indices),
-		.sizeIndex = vgeVectorGetSizeElement(parserContext.model.indices)
+		.numIndexes = listGetNumElems(parserContext.model.indices),
+		.data = parserContext.model.indices,
+		.sizeIndex = listGetElemSize(parserContext.model.indices)
 	};
 
 	info.indexInfo = &indexInfo;
 
 	model->model = createVgeModel(context, &info);
 
-	vgeVectorFree(parserContext.model.vertices);
-	vgeVectorFree(parserContext.model.textures);
-	vgeVectorFree(parserContext.model.normals);
-	vgeVectorFree(parserContext.model.faces);
-	vgeVectorFree(parserContext.model.indices);
-	vgeVectorFree(parserContext.offsets);
-	vgeVectorFree(parserContext.faceIndices);
+	listFree(parserContext.model.vertices);
+	listFree(parserContext.model.textures);
+	listFree(parserContext.model.normals);
+	listFree(parserContext.model.faces);
+	listFree(parserContext.model.indices);
+	listFree(parserContext.offsets);
+	listFree(parserContext.faceIndices);
 
 	return toReturn;
 }
